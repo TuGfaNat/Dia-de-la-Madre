@@ -1,0 +1,56 @@
+[
+  {
+    "id": "1",
+    "name": "Ramo Rosas Eternas & Oro",
+    "description": "Exclusivo arreglo de 12 rosas seleccionadas en tonos pastel, presentadas en sombrerera prémium con detalles en relieve dorado. Incluye tarjeta con dedicatoria personalizada.",
+    "price": 4500,
+    "stock": 15,
+    "image": "https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&q=80&w=600",
+    "category": "Flores"
+  },
+  {
+    "id": "2",
+    "name": "Collar Corazón de Mamá",
+    "description": "Delicado collar de plata de ley 925 bañado en oro rosa de 18k, con un dije en forma de corazón entrelazado decorado con cristales de zirconia brillante de alta pureza.",
+    "price": 12000,
+    "stock": 8,
+    "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=600",
+    "category": "Joyería"
+  },
+  {
+    "id": "3",
+    "name": "Caja Chocolates de Autor",
+    "description": "Selección de 24 bombones artesanales elaborados con cacao de origen belga. Rellenos gourmet de praliné, caramelo salado, frutos rojos y ganache de lavanda.",
+    "price": 3200,
+    "stock": 25,
+    "image": "https://images.unsplash.com/photo-1548907040-4d42b52115ca?auto=format&fit=crop&q=80&w=600",
+    "category": "Chocolates"
+  },
+  {
+    "id": "4",
+    "name": "Kit Spa de Lujo Lavanda",
+    "description": "Una experiencia de relajación completa en casa. Incluye sales de baño del Himalaya, aceite corporal de lavanda y almendras, vela de soya aromática y toalla de algodón orgánico.",
+    "price": 6800,
+    "stock": 10,
+    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=600",
+    "category": "Spa"
+  },
+  {
+    "id": "5",
+    "name": "Taza de Cerámica 'Mamá Te Amo'",
+    "description": "Taza artesanal de cerámica gres con asa esmaltada en oro real de 24k. Perfecta para recordarle tu amor en cada taza de café o té de la mañana.",
+    "price": 2500,
+    "stock": 30,
+    "image": "https://images.unsplash.com/photo-1517256064527-09c53b2d0bc6?auto=format&fit=crop&q=80&w=600",
+    "category": "Regalos"
+  },
+  {
+    "id": "6",
+    "name": "Arreglo Globos & Orquídea",
+    "description": "Elegante orquídea phalaenopsis de dos varas en maceta de cerámica blanca, acompañada de un globo burbuja personalizado y helio de alta duración.",
+    "price": 8500,
+    "stock": 5,
+    "image": "https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&q=80&w=600",
+    "category": "Flores"
+  }
+]

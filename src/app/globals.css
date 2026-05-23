@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@theme {
+  /* Paleta de colores romántica y de alta legibilidad */
+  --color-rose-gold: #b76e79;
+  --color-warm-pink: #e65c73;
+  --color-vintage-gold: #d4af37;
+  --color-velvet-rose: #8a1f32;
+  --color-blush-rose: #ff758c;
+
+  /* Colores dinámicos del sistema de temas (Light/Dark) */
+  --color-rose-bg: var(--background);
+  --color-rose-fg: var(--foreground);
+  --color-card-bg: var(--card-bg);
+  --color-card-border: var(--card-border);
+  --color-txt-primary: var(--text-primary);
+  --color-txt-secondary: var(--text-secondary);
+  --color-txt-muted: var(--text-muted);
+
+  /* Asignación de fuentes de alta nitidez */
+  --font-serif: var(--font-playfair), Georgia, serif;
+  --font-sans: var(--font-outfit), system-ui, sans-serif;
+}
+
+:root {
+  /* Modo Oscuro Romántico Unificado - Alta Nitidez y Contraste Premium */
+  --background: #150d0f;
+  --foreground: #fcf7f8;
+  --card-bg: #1e1416;
+  --card-border: rgba(255, 117, 140, 0.2);
+  --text-primary: #fcf7f8;
+  --text-secondary: #e6d3d6;
+  --text-muted: #bda2a6;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  /* Suavizado de tipografías avanzado para evitar fatiga visual */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Efectos y animaciones personalizadas */
+.elegant-shadow {
+  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.4);
+}
+
+.elegant-shadow-hover {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.elegant-shadow-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.6);
+}
+
+.rose-gold-gradient {
+  background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+}
+
+.vintage-gold-gradient {
+  background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
+}
+
+.glassmorphism {
+  background: rgba(30, 20, 22, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Personalización del scroll */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ffb8c6;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #ff758c;
+}

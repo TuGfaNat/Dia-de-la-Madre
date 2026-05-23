@@ -499,21 +499,126 @@ export default function HomePage() {
         )}
       </main>
 
-      {/* FOOTER */}
       <footer className="bg-card-border/10 dark:bg-[#11090b] text-txt-secondary py-12 border-t border-card-border mt-20">
         <div className="max-w-7xl mx-auto px-4 text-center space-y-6">
           <div className="flex flex-col items-center justify-center gap-3">
             <div className="w-14 h-14 rounded-full overflow-hidden border border-card-border shadow-sm">
               <img src="/logo.jpg" alt="Shiro Neko Logo" className="w-full h-full object-cover" />
             </div>
-            <span className="text-txt-primary font-serif font-bold text-lg">Shiro Neko Lab & TuGfaNat</span>
+            <span className="text-txt-primary font-serif font-bold text-lg">
+              <a 
+                href="https://www.instagram.com/shiro_neko_lab/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-rose-500 hover:text-rose-600 dark:text-rose-450 dark:hover:text-rose-400 hover:underline transition-colors"
+              >
+                Shiro Neko Lab
+              </a>{' '}
+              &{' '}
+              <a 
+                href="https://www.instagram.com/tugfanat/" 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="text-rose-500 hover:text-rose-600 dark:text-rose-450 dark:hover:text-rose-400 hover:underline transition-colors"
+              >
+                TuGfaNat
+              </a>
+            </span>
           </div>
           <p className="text-sm font-medium text-txt-secondary max-w-md mx-auto leading-relaxed">
             Creado para brindar la experiencia de compra más tierna, rápida y hermosa para el ser que nos dio la vida.
           </p>
+          
+          {/* Botones de Redes Sociales */}
+          <div className="flex flex-col sm:flex-row justify-center items-center gap-6 text-sm">
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-[10px] text-txt-muted uppercase tracking-widest font-bold">Shiro Neko Lab</span>
+              <div className="flex gap-2.5">
+                <a 
+                  href="https://www.instagram.com/shiro_neko_lab/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="p-2.5 rounded-full bg-card-border/20 text-rose-500 hover:text-white hover:bg-rose-500 transition-all duration-300 shadow-xs flex items-center justify-center"
+                  aria-label="Instagram de Shiro Neko Lab"
+                  title="Instagram Shiro Neko Lab"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                  </svg>
+                </a>
+                <a 
+                  href="https://www.tiktok.com/@shiro.neko.lab" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="p-2.5 rounded-full bg-card-border/20 text-rose-500 hover:text-white hover:bg-rose-500 transition-all duration-300 shadow-xs flex items-center justify-center"
+                  aria-label="TikTok de Shiro Neko Lab"
+                  title="TikTok Shiro Neko Lab"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.74-3.94-1.78-.22-.22-.41-.47-.59-.73v5.02c.01 2.44-.94 4.85-2.77 6.49-1.92 1.8-4.72 2.45-7.22 1.78-2.61-.71-4.73-2.9-5.27-5.56-.69-3.17 1.03-6.66 4.09-7.79.82-.31 1.7-.44 2.57-.45v4.07c-1.07.03-2.18.52-2.77 1.45-.73 1.07-.63 2.64.29 3.56.91.95 2.45 1.09 3.52.32.74-.5 1.16-1.37 1.16-2.26V.02z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div className="hidden sm:block h-8 w-[1px] bg-card-border"></div>
+
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-[10px] text-txt-muted uppercase tracking-widest font-bold">TuGfaNat</span>
+              <div className="flex gap-2.5">
+                <a 
+                  href="https://www.instagram.com/tugfanat/" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="p-2.5 rounded-full bg-card-border/20 text-rose-500 hover:text-white hover:bg-rose-500 transition-all duration-300 shadow-xs flex items-center justify-center"
+                  aria-label="Instagram de TuGfaNat"
+                  title="Instagram TuGfaNat"
+                >
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-4 h-4">
+                    <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                    <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                    <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                  </svg>
+                </a>
+                <a 
+                  href="https://www.tiktok.com/@tugfanat" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="p-2.5 rounded-full bg-card-border/20 text-rose-500 hover:text-white hover:bg-rose-500 transition-all duration-300 shadow-xs flex items-center justify-center"
+                  aria-label="TikTok de TuGfaNat"
+                  title="TikTok TuGfaNat"
+                >
+                  <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24">
+                    <path d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.17-2.89-.74-3.94-1.78-.22-.22-.41-.47-.59-.73v5.02c.01 2.44-.94 4.85-2.77 6.49-1.92 1.8-4.72 2.45-7.22 1.78-2.61-.71-4.73-2.9-5.27-5.56-.69-3.17 1.03-6.66 4.09-7.79.82-.31 1.7-.44 2.57-.45v4.07c-1.07.03-2.18.52-2.77 1.45-.73 1.07-.63 2.64.29 3.56.91.95 2.45 1.09 3.52.32.74-.5 1.16-1.37 1.16-2.26V.02z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+
           <div className="h-[1px] bg-card-border w-24 mx-auto"></div>
           <p className="text-xs text-txt-muted">
-            © 2026 Shiro Neko Lab & TuGfaNat. Todos los derechos reservados.
+            © 2026{' '}
+            <a 
+              href="https://www.instagram.com/shiro_neko_lab/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-rose-500 hover:text-rose-600 dark:text-rose-450 dark:hover:text-rose-400 hover:underline transition-colors"
+            >
+              Shiro Neko Lab
+            </a>{' '}
+            &{' '}
+            <a 
+              href="https://www.instagram.com/tugfanat/" 
+              target="_blank" 
+              rel="noopener noreferrer" 
+              className="text-rose-500 hover:text-rose-600 dark:text-rose-450 dark:hover:text-rose-400 hover:underline transition-colors"
+            >
+              TuGfaNat
+            </a>
+            . Todos los derechos reservados.
           </p>
         </div>
       </footer>

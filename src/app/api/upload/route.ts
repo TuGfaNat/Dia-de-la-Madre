@@ -27,7 +27,9 @@ export async function POST(request: Request) {
 
     // 2. Si Vercel Blob está configurado (producción en Vercel), subimos a la nube
     if (process.env.BLOB_READ_WRITE_TOKEN) {
-      const blob = await put(file.name, file, {
+      const bytes = await file.arrayBuffer();
+      const buffer = Buffer.from(bytes);
+      const blob = await put(file.name, buffer, {
         access: 'public',
       });
       return NextResponse.json({ url: blob.url });

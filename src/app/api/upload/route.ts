@@ -15,7 +15,17 @@ export async function POST(request: Request) {
       );
     }
 
-    // 1. Si Vercel Blob está configurado (producción en Vercel), subimos a la nube
+    // 1. Si estamos en Vercel pero no se ha configurado Vercel Blob, evitamos intentar escribir localmente
+    if (process.env.VERCEL && !process.env.BLOB_READ_WRITE_TOKEN) {
+      return NextResponse.json(
+        { 
+          error: '¡Falta configurar Vercel Blob! Para poder subir y modificar fotos en producción, ve a la pestaña "Storage" en tu panel de Vercel, crea un almacén de "Blob" y conéctalo a tu proyecto.' 
+        },
+        { status: 400 }
+      );
+    }
+
+    // 2. Si Vercel Blob está configurado (producción en Vercel), subimos a la nube
     if (process.env.BLOB_READ_WRITE_TOKEN) {
       const blob = await put(file.name, file, {
         access: 'public',
@@ -23,7 +33,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ url: blob.url });
     }
 
-    // 2. Si no, guardamos localmente en public/uploads (desarrollo local)
+    // 3. Si no, guardamos localmente en public/uploads (desarrollo local)
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
@@ -44,7 +54,7 @@ export async function POST(request: Request) {
   } catch (error: any) {
     console.error('Error procesando la subida de imagen:', error);
     return NextResponse.json(
-      { error: 'Error al subir la imagen en el servidor' },
+      { error: 'Error al subir la imagen en el servidor: ' + (error.message || error) },
       { status: 500 }
     );
   }

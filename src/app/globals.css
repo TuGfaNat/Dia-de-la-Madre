@@ -1,14 +1,26 @@
 @import "tailwindcss";
 
 @theme {
-  /* Paleta de colores romántica y de alta legibilidad */
-  --color-rose-gold: #b76e79;
-  --color-warm-pink: #e65c73;
-  --color-vintage-gold: #d4af37;
-  --color-velvet-rose: #8a1f32;
-  --color-blush-rose: #ff758c;
+  /* Paleta Shiro Neko Lab - Artesanal, Premium y Romántica */
+  --color-sh-gold: #c5a059;       /* Oro Antiguo de Shiro Neko (color del carrete) */
+  --color-sh-coral: #f2a58b;      /* Coral Suave Shiro Neko (color de la cinta) */
+  --color-sh-teal: #5f7f98;       /* Azul Pizarra/Teal Shiro Neko (color de la cinta azul) */
+  --color-sh-cream: #f7f5f0;      /* Crema suave de fondo */
 
-  /* Colores dinámicos del sistema de temas (Light/Dark) */
+  /* Redefinición inteligente de colores para aplicar la paleta Shiro Neko en toda la app sin alterar las clases existentes */
+  --color-rose-50: #fbfaf8;       /* Fondo crema súper claro */
+  --color-rose-100: #f6eede;      /* Crema suave/papel kraft claro */
+  --color-rose-200: #e5d1b3;      /* Arena dorada suave */
+  --color-rose-300: #d7b98d;      /* Oro antiguo claro */
+  --color-rose-400: #c5a059;      /* Oro Antiguo Shiro Neko */
+  --color-rose-500: #f2a58b;      /* Coral Suave Shiro Neko */
+  --color-rose-600: #e08e73;      /* Coral medio */
+  --color-rose-700: #cc785d;      /* Coral oscuro */
+  --color-rose-800: #5f7f98;      /* Azul Pizarra Shiro Neko */
+  --color-rose-900: #466277;      /* Azul Pizarra oscuro */
+  --color-rose-950: #293b49;      /* Azul Pizarra muy profundo */
+
+  /* Colores dinámicos del sistema de temas */
   --color-rose-bg: var(--background);
   --color-rose-fg: var(--foreground);
   --color-card-bg: var(--card-bg);
@@ -23,14 +35,14 @@
 }
 
 :root {
-  /* Modo Oscuro Romántico Unificado - Alta Nitidez y Contraste Premium */
-  --background: #150d0f;
-  --foreground: #fcf7f8;
-  --card-bg: #1e1416;
-  --card-border: rgba(255, 117, 140, 0.2);
-  --text-primary: #fcf7f8;
-  --text-secondary: #e6d3d6;
-  --text-muted: #bda2a6;
+  /* Modo Oscuro Romántico Shiro Neko - Alta Nitidez y Contraste Premium */
+  --background: #111417;          /* Fondo pizarra oscuro profundo y cálido */
+  --foreground: #f7f5f0;          /* Texto crema suave del fondo del logo */
+  --card-bg: #181d22;             /* Tarjetas gris pizarra/carbón */
+  --card-border: rgba(197, 160, 89, 0.22); /* Bordes oro antiguo del logo */
+  --text-primary: #f7f5f0;        /* Texto crema nítido */
+  --text-secondary: #cbd3dc;      /* Crema slate */
+  --text-muted: #8595a4;          /* Slate apagado */
 }
 
 body {
@@ -58,17 +70,17 @@ body {
 }
 
 .rose-gold-gradient {
-  background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+  background: linear-gradient(135deg, #f2a58b 0%, #c5a059 100%);
 }
 
 .vintage-gold-gradient {
-  background: linear-gradient(135deg, #d4af37 0%, #aa7c11 100%);
+  background: linear-gradient(135deg, #c5a059 0%, #d4af37 100%);
 }
 
 .glassmorphism {
-  background: rgba(30, 20, 22, 0.8);
+  background: rgba(24, 29, 34, 0.85);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Personalización del scroll */
@@ -81,10 +93,10 @@ body {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #ffb8c6;
+  background: #c5a059;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ff758c;
+  background: #f2a58b;
 }

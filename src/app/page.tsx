@@ -245,10 +245,9 @@ export default function HomePage() {
         </div>
       </header>
 
-      {/* HERO SECTION DE LUJO */}
-      <section className="relative overflow-hidden py-16 md:py-24 bg-gradient-to-r from-[#fff3f5] via-rose-bg to-[#fff3f5] dark:from-[#221215] dark:via-rose-bg dark:to-[#221215] border-b border-card-border">
-        <div className="absolute top-10 left-10 w-48 h-48 bg-rose-200/10 dark:bg-rose-900/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-10 right-10 w-72 h-72 bg-amber-100/10 dark:bg-amber-900/10 rounded-full blur-3xl"></div>
+      <section className="relative overflow-hidden py-16 md:py-24 bg-gradient-to-b from-[#181d22] to-transparent border-b border-card-border">
+        <div className="absolute top-10 left-10 w-48 h-48 bg-rose-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-10 right-10 w-72 h-72 bg-rose-800/5 rounded-full blur-3xl"></div>
         
         <div className="max-w-4xl mx-auto text-center px-4 relative">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-100/60 dark:bg-rose-950/40 text-rose-600 dark:text-rose-400 text-xs font-bold mb-6 animate-pulse">

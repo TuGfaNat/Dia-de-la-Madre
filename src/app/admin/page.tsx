@@ -94,6 +94,20 @@ export default function AdminPage() {
   const [addError, setAddError] = useState('');
   const [addLoading, setAddLoading] = useState(false);
 
+  // Estado del estatus de la Base de Datos
+  interface DbStatus {
+    kvEnabled: boolean;
+    kvWorking: boolean;
+    kvError: string | null;
+    productsCount: number;
+    env?: {
+      hasUrl: boolean;
+      hasToken: boolean;
+      nodeEnv: string;
+    };
+  }
+  const [dbStatus, setDbStatus] = useState<DbStatus | null>(null);
+
   // Estados del modal de editar producto completo
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -116,11 +130,24 @@ export default function AdminPage() {
         setIsAuthenticated(true);
         fetchProducts();
         fetchCategories();
+        fetchDbStatus();
       } else {
         setIsAuthenticated(false);
       }
     } catch {
       setIsAuthenticated(false);
+    }
+  };
+
+  const fetchDbStatus = async () => {
+    try {
+      const res = await fetch('/api/admin/db-status', { cache: 'no-store' });
+      if (res.ok) {
+        const data = await res.json();
+        setDbStatus(data);
+      }
+    } catch (e) {
+      console.error('Error fetching DB status:', e);
     }
   };
 
@@ -162,6 +189,8 @@ export default function AdminPage() {
       if (res.ok && data.success) {
         setIsAuthenticated(true);
         fetchProducts();
+        fetchCategories();
+        fetchDbStatus();
       } else {
         setLoginError(data.error || 'Contraseña incorrecta');
       }
@@ -623,6 +652,38 @@ export default function AdminPage() {
 
       {/* Contenido Principal */}
       <main className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 flex-grow">
+        {/* Banner de Estado de Base de Datos */}
+        {dbStatus && (
+          <div className={`p-4 rounded-2xl border flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 elegant-shadow ${
+            dbStatus.kvWorking 
+              ? 'bg-emerald-500/5 border-emerald-500/20 text-emerald-600 dark:text-emerald-400' 
+              : 'bg-amber-500/5 border-amber-500/20 text-amber-600 dark:text-amber-400 animate-pulse'
+          }`}>
+            <div className="space-y-1">
+              <h3 className="font-bold text-sm flex items-center gap-2">
+                <span className={`w-2.5 h-2.5 rounded-full ${dbStatus.kvWorking ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500 animate-ping'}`} />
+                Base de Datos: {dbStatus.kvWorking ? 'Vercel KV Activa' : 'Modo Fallback / Memoria'}
+              </h3>
+              <p className="text-xs text-txt-secondary max-w-2xl font-medium">
+                {dbStatus.kvWorking 
+                  ? `Conexión en vivo activa. Los cambios persistirán de forma permanente en producción. (${dbStatus.productsCount} productos en KV).`
+                  : `Advertencia: Las variables de Vercel KV no están configuradas o la conexión está fallando. Los cambios solo se guardarán temporalmente en la memoria del servidor y se borrarán al reiniciar el contenedor en Vercel. Error: ${dbStatus.kvError || 'Sin credenciales'}`}
+              </p>
+            </div>
+            
+            {!dbStatus.kvWorking && (
+              <button
+                onClick={() => {
+                  alert("Para solucionar esto:\n1. Asegúrate de haber creado una base de datos Vercel KV en el panel de Vercel.\n2. Asegúrate de enlazar (link) la base de datos KV a este proyecto en Vercel.\n3. Si estás en local, crea un archivo .env.local con las variables de conexión de tu KV.");
+                }}
+                className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer"
+              >
+                ¿Cómo solucionar?
+              </button>
+            )}
+          </div>
+        )}
+
         {/* Selector de pestañas */}
         <div className="flex gap-2 border-b border-card-border pb-2">
           <button

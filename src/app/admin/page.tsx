@@ -185,7 +185,7 @@ export default function AdminPage() {
   const fetchProducts = async () => {
     try {
       setLoadingProducts(true);
-      const res = await fetch('/api/products');
+      const res = await fetch('/api/products', { cache: 'no-store' });
       if (!res.ok) throw new Error('Error al cargar productos');
       const data = await res.json();
       setProducts(data);

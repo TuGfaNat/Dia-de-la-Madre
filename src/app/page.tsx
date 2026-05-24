@@ -92,7 +92,7 @@ export default function HomePage() {
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      const res = await fetch('/api/products');
+      const res = await fetch('/api/products', { cache: 'no-store' });
       if (!res.ok) throw new Error('Error al conectar con el servidor');
       const data = await res.json();
       setProducts(data);
@@ -105,7 +105,7 @@ export default function HomePage() {
 
   const fetchCategories = async () => {
     try {
-      const res = await fetch('/api/categories');
+      const res = await fetch('/api/categories', { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         const names = data.map((c: any) => c.name);

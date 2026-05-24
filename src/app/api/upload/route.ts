@@ -55,8 +55,12 @@ export async function POST(request: Request) {
     return NextResponse.json({ url: `/uploads/${uniqueFilename}` });
   } catch (error: any) {
     console.error('Error procesando la subida de imagen:', error);
+    let errorMessage = error.message || String(error);
+    if (errorMessage.includes('private store') || errorMessage.includes('public access')) {
+      errorMessage = 'Tu Vercel Blob está configurado como "Privado" (Private). Para una tienda virtual, las fotos de productos deben ser públicas para que tus clientes puedan verlas. Por favor, ve a Vercel -> Storage, crea un nuevo Blob con acceso "Público" (Public) y conéctalo a tu proyecto.';
+    }
     return NextResponse.json(
-      { error: 'Error al subir la imagen en el servidor: ' + (error.message || error) },
+      { error: 'Error al subir la imagen en el servidor: ' + errorMessage },
       { status: 500 }
     );
   }

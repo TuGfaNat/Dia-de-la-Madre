@@ -16,12 +16,27 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, description, price, stock, image, category } = body;
+    const { name, description, price, stock, image, images, category } = body;
 
     // Validación básica de campos
-    if (!name || !description || price === undefined || stock === undefined || !image || !category) {
+    if (!name || !description || price === undefined || stock === undefined || !category) {
       return NextResponse.json(
         { error: 'Faltan campos obligatorios' },
+        { status: 400 }
+      );
+    }
+
+    // Normalizar imágenes (soporte para image y images)
+    let finalImages: string[] = [];
+    if (images && Array.isArray(images) && images.length > 0) {
+      finalImages = images.filter(img => typeof img === 'string' && img.trim() !== '');
+    } else if (image && typeof image === 'string' && image.trim() !== '') {
+      finalImages = [image.trim()];
+    }
+
+    if (finalImages.length === 0) {
+      return NextResponse.json(
+        { error: 'Debe proporcionar al menos una imagen' },
         { status: 400 }
       );
     }
@@ -52,7 +67,8 @@ export async function POST(request: Request) {
       description,
       price: priceNum,
       stock: stockNum,
-      image,
+      image: finalImages[0],
+      images: finalImages,
       category,
     };
 

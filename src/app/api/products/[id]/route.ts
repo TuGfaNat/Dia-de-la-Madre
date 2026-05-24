@@ -12,7 +12,7 @@ export async function PUT(
   try {
     const { id } = await context.params;
     const body = await request.json();
-    const { name, description, price, stock, image, category } = body;
+    const { name, description, price, stock, image, images, category } = body;
 
     const products = await getProducts();
     const index = products.findIndex((p) => p.id === id);
@@ -37,13 +37,22 @@ export async function PUT(
       return NextResponse.json({ error: 'Stock inválido' }, { status: 400 });
     }
 
+    // Normalizar imágenes (soporte para image y images)
+    let finalImages: string[] | undefined = undefined;
+    if (images && Array.isArray(images)) {
+      finalImages = images.filter(img => typeof img === 'string' && img.trim() !== '');
+    } else if (image && typeof image === 'string' && image.trim() !== '') {
+      finalImages = [image.trim()];
+    }
+
     const updatedProduct: Product = {
       ...currentProduct,
       name: name ?? currentProduct.name,
       description: description ?? currentProduct.description,
       price: priceNum,
       stock: stockNum,
-      image: image ?? currentProduct.image,
+      image: finalImages && finalImages.length > 0 ? finalImages[0] : (image ?? currentProduct.image),
+      images: finalImages ?? currentProduct.images,
       category: category ?? currentProduct.category,
     };
 

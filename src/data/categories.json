@@ -1,0 +1,7 @@
+[
+  { "id": "flores", "name": "Flores" },
+  { "id": "joyeria", "name": "Joyería" },
+  { "id": "chocolates", "name": "Chocolates" },
+  { "id": "spa", "name": "Spa" },
+  { "id": "regalos", "name": "Regalos" }
+]

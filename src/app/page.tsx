@@ -15,7 +15,10 @@ import {
   Check,
   AlertCircle,
   Sun,
-  Moon
+  Moon,
+  ChevronLeft,
+  ChevronRight,
+  Users
 } from 'lucide-react';
 
 interface Product {
@@ -25,6 +28,7 @@ interface Product {
   price: number;
   stock: number;
   image: string;
+  images?: string[];
   category: string;
 }
 
@@ -39,11 +43,15 @@ export default function HomePage() {
   
   // Estados de UI
   const [searchTerm, setSearchTerm] = useState('');
+  const [categories, setCategories] = useState<string[]>(['Todos']);
   const [selectedCategory, setSelectedCategory] = useState('Todos');
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [mounted, setMounted] = useState(false);
   const [notification, setNotification] = useState<{message: string, type: 'success' | 'error'} | null>(null);
+  
+  // Estado para las imágenes activas en los carruseles (id_producto -> indice_activo)
+  const [activeImageIndexes, setActiveImageIndexes] = useState<Record<string, number>>({});
 
   const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '59175767332';
 
@@ -65,6 +73,7 @@ export default function HomePage() {
     document.documentElement.classList.add('dark');
 
     fetchProducts();
+    fetchCategories();
   }, []);
 
   const fetchProducts = async () => {
@@ -79,6 +88,40 @@ export default function HomePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchCategories = async () => {
+    try {
+      const res = await fetch('/api/categories');
+      if (res.ok) {
+        const data = await res.json();
+        const names = data.map((c: any) => c.name);
+        setCategories(['Todos', ...names]);
+      }
+    } catch (e) {
+      console.error('Error fetching categories:', e);
+    }
+  };
+
+  // Ayudantes de navegación para carrusel de fotos múltiples
+  const getActiveImageIndex = (productId: string) => {
+    return activeImageIndexes[productId] || 0;
+  };
+
+  const nextImage = (productId: string, imagesLength: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const currentIndex = getActiveImageIndex(productId);
+    const nextIndex = (currentIndex + 1) % imagesLength;
+    setActiveImageIndexes(prev => ({ ...prev, [productId]: nextIndex }));
+  };
+
+  const prevImage = (productId: string, imagesLength: number, e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const currentIndex = getActiveImageIndex(productId);
+    const prevIndex = (currentIndex - 1 + imagesLength) % imagesLength;
+    setActiveImageIndexes(prev => ({ ...prev, [productId]: prevIndex }));
   };
 
   // Guardar en localStorage cada vez que cambia el carrito
@@ -161,8 +204,6 @@ export default function HomePage() {
     const matchesCategory = selectedCategory === 'Todos' || product.category === selectedCategory;
     return matchesSearch && matchesCategory;
   });
-
-  const categories = ['Todos', ...Array.from(new Set(products.map(p => p.category)))];
 
   const handleCheckout = () => {
     if (cart.length === 0) return;
@@ -306,6 +347,33 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* BANNER DE NOVEDADES WHATSAPP GRUPO */}
+      <section className="max-w-4xl mx-auto px-4 mt-6 w-full">
+        <div className="bg-card-bg border border-card-border rounded-3xl p-6 md:p-8 elegant-shadow flex flex-col md:flex-row items-center justify-between gap-6 transition-all duration-300">
+          <div className="flex items-center gap-4 text-center md:text-left flex-col md:flex-row">
+            <div className="w-12 h-12 rounded-2xl bg-rose-800/10 text-rose-800 flex items-center justify-center shrink-0">
+              <Users className="w-6 h-6 animate-pulse" />
+            </div>
+            <div className="space-y-1">
+              <h3 className="font-serif font-bold text-lg text-txt-primary">📢 ¡Únete a nuestro Club de Novedades!</h3>
+              <p className="text-xs md:text-sm text-txt-secondary font-medium max-w-lg">
+                Sé el primero en enterarte de nuevos lanzamientos, ofertas exclusivas y novedades de Shiro Neko Lab directamente en tu celular.
+              </p>
+            </div>
+          </div>
+          
+          <a
+            href="https://chat.whatsapp.com/BTVNKDqgsFgAiuxTtb8clI"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-6 py-3 bg-gradient-to-r from-rose-500 to-rose-600 hover:from-rose-600 hover:to-rose-700 text-white font-bold rounded-full text-xs tracking-wide transition-all shadow-md shrink-0 flex items-center gap-2 cursor-pointer"
+          >
+            <MessageCircle className="w-4 h-4 fill-white" />
+            Unirse al Grupo de Novedades
+          </a>
+        </div>
+      </section>
+
       {/* SECCIÓN CARACTERÍSTICAS / VALORES */}
       <section className="max-w-7xl mx-auto px-4 mt-8 grid grid-cols-1 sm:grid-cols-3 gap-6">
         {/* Tarjeta 1 */}
@@ -421,15 +489,54 @@ export default function HomePage() {
                   </span>
 
                   {/* Imagen */}
-                  <div className="aspect-square w-full relative overflow-hidden bg-rose-50/5 dark:bg-rose-950/10">
-                    <img
-                      src={product.image}
-                      alt={product.name}
-                      className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
-                      loading="lazy"
-                    />
+                  <div className="aspect-square w-full relative overflow-hidden bg-rose-50/5 dark:bg-rose-950/10 group/img">
+                    {product.images && product.images.length > 1 ? (
+                      <>
+                        <img
+                          src={product.images[getActiveImageIndex(product.id)]}
+                          alt={`${product.name} - Imagen ${getActiveImageIndex(product.id) + 1}`}
+                          className="w-full h-full object-cover transition-all duration-500"
+                          loading="lazy"
+                        />
+                        {/* Botones de navegación (visibles en hover) */}
+                        <button
+                          onClick={(e) => prevImage(product.id, product.images!.length, e)}
+                          className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/85 text-white opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 z-10 cursor-pointer"
+                          aria-label="Imagen anterior"
+                        >
+                          <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        <button
+                          onClick={(e) => nextImage(product.id, product.images!.length, e)}
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/85 text-white opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 z-10 cursor-pointer"
+                          aria-label="Siguiente imagen"
+                        >
+                          <ChevronRight className="w-4 h-4" />
+                        </button>
+                        {/* Indicadores de puntos */}
+                        <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5 z-10">
+                          {product.images.map((_, idx) => (
+                            <span
+                              key={idx}
+                              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                                getActiveImageIndex(product.id) === idx
+                                  ? 'bg-rose-500 scale-110'
+                                  : 'bg-white/55'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                      </>
+                    ) : (
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="w-full h-full object-cover group-hover:scale-102 transition-transform duration-500"
+                        loading="lazy"
+                      />
+                    )}
                     {isOutOfStock && (
-                      <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center">
+                      <div className="absolute inset-0 bg-black/60 backdrop-blur-xs flex items-center justify-center z-15">
                         <span className="px-4 py-2 rounded-full bg-rose-600 text-white text-xs font-black tracking-widest uppercase shadow-md">
                           Agotado
                         </span>

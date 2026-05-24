@@ -63,6 +63,9 @@ export default function HomePage() {
   const [detailsTouchStart, setDetailsTouchStart] = useState<number | null>(null);
   const [detailsTouchEnd, setDetailsTouchEnd] = useState<number | null>(null);
 
+  // Estado de cantidad en el modal de detalles
+  const [modalQuantity, setModalQuantity] = useState<number>(1);
+
   const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '59175767332';
 
   // Evitar problemas de hidratación de Next.js al usar localStorage y configurar tema
@@ -147,12 +150,12 @@ export default function HomePage() {
     }, 3000);
   };
 
-  const addToCart = (product: Product) => {
+  const addToCart = (product: Product, quantityToAdd: number = 1) => {
     const existingItem = cart.find(item => item.id === product.id);
     const currentQty = existingItem ? existingItem.quantity : 0;
 
-    if (currentQty >= product.stock) {
-      showNotification(`¡Lo sentimos! Solo quedan ${product.stock} unidades de este producto.`, 'error');
+    if (currentQty + quantityToAdd > product.stock) {
+      showNotification(`¡Lo sentimos! Solo quedan ${product.stock - currentQty} unidades adicionales disponibles.`, 'error');
       return;
     }
 
@@ -160,14 +163,19 @@ export default function HomePage() {
     if (existingItem) {
       newCart = cart.map(item => 
         item.id === product.id 
-          ? { ...item, quantity: item.quantity + 1 }
+          ? { ...item, quantity: item.quantity + quantityToAdd }
           : item
       );
-      showNotification(`Añadido al carrito: ${product.name}`);
     } else {
-      newCart = [...cart, { ...product, quantity: 1 }];
-      showNotification(`Añadido al carrito: ${product.name}`);
+      newCart = [...cart, { ...product, quantity: quantityToAdd }];
     }
+    
+    showNotification(
+      quantityToAdd > 1 
+        ? `Añadidas ${quantityToAdd} unidades de ${product.name} al carrito`
+        : `Añadido al carrito: ${product.name}`
+    );
+    
     saveCartToStorage(newCart);
   };
 
@@ -240,7 +248,7 @@ export default function HomePage() {
     <div className="min-h-screen flex flex-col relative bg-rose-bg text-rose-fg transition-colors duration-300">
       {/* Notificaciones flotantes */}
       {notification && (
-        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 px-4 py-3 rounded-full shadow-lg glassmorphism animate-bounce text-sm font-semibold max-w-sm">
+        <div className="fixed top-5 left-1/2 -translate-x-1/2 z-[100] flex items-center gap-2 px-4 py-3 rounded-full shadow-lg glassmorphism animate-bounce text-sm font-semibold max-w-sm">
           {notification.type === 'success' ? (
             <span className="p-1 rounded-full bg-emerald-100 text-emerald-600">
               <Check className="w-4 h-4" />
@@ -495,6 +503,7 @@ export default function HomePage() {
                   onClick={() => {
                     setSelectedProduct(product);
                     setDetailsActiveImageIndex(0);
+                    setModalQuantity(1);
                   }}
                   className="group bg-card-bg rounded-3xl border border-card-border overflow-hidden elegant-shadow elegant-shadow-hover flex flex-col relative cursor-pointer"
                 >
@@ -1055,15 +1064,43 @@ export default function HomePage() {
 
                   {(() => {
                     const cartItem = cart.find(item => item.id === selectedProduct.id);
-                    const qty = cartItem ? cartItem.quantity : 0;
+                    const qtyInCart = cartItem ? cartItem.quantity : 0;
+                    const maxAvailable = selectedProduct.stock - qtyInCart;
                     const isOutOfStock = selectedProduct.stock <= 0;
-                    const isLimit = qty >= selectedProduct.stock;
+                    const isLimit = qtyInCart >= selectedProduct.stock;
 
                     return (
-                      <div className="space-y-3">
+                      <div className="space-y-4">
+                        {/* Selector de Cantidad en Modal */}
+                        {!isOutOfStock && !isLimit && (
+                          <div className="flex items-center justify-between bg-card-border/5 border border-card-border rounded-2xl p-3 animate-in fade-in duration-300">
+                            <span className="text-xs font-bold text-txt-secondary">Cantidad a añadir:</span>
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => setModalQuantity(prev => Math.max(1, prev - 1))}
+                                disabled={modalQuantity <= 1}
+                                className="p-2 rounded-full bg-card-border/10 text-txt-secondary hover:bg-card-border/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                aria-label="Disminuir cantidad"
+                              >
+                                <Minus className="w-3.5 h-3.5" />
+                              </button>
+                              <span className="w-8 text-center text-sm font-black text-txt-primary">{modalQuantity}</span>
+                              <button
+                                onClick={() => setModalQuantity(prev => Math.min(maxAvailable, prev + 1))}
+                                disabled={modalQuantity >= maxAvailable}
+                                className="p-2 rounded-full bg-card-border/10 text-txt-secondary hover:bg-card-border/20 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                aria-label="Aumentar cantidad"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </div>
+                        )}
+
                         <button
                           onClick={() => {
-                            addToCart(selectedProduct);
+                            addToCart(selectedProduct, modalQuantity);
+                            setModalQuantity(1); // Resetear a 1 después de añadir
                           }}
                           disabled={isOutOfStock || isLimit}
                           className={`w-full py-3.5 px-4 rounded-full font-bold tracking-wide transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md ${
@@ -1080,7 +1117,7 @@ export default function HomePage() {
                             'Límite de stock añadido'
                           ) : (
                             <>
-                              <ShoppingBag className="w-4 h-4" /> Añadir al carrito
+                              <ShoppingBag className="w-4 h-4" /> Añadir {modalQuantity > 1 ? `${modalQuantity} unidades` : 'al carrito'}
                             </>
                           )}
                         </button>

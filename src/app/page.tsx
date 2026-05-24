@@ -57,6 +57,12 @@ export default function HomePage() {
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [detailsActiveImageIndex, setDetailsActiveImageIndex] = useState<number>(0);
 
+  // Estados para deslizamiento táctil (mobile swipe)
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [detailsTouchStart, setDetailsTouchStart] = useState<number | null>(null);
+  const [detailsTouchEnd, setDetailsTouchEnd] = useState<number | null>(null);
+
   const WHATSAPP_NUMBER = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '59175767332';
 
   // Evitar problemas de hidratación de Next.js al usar localStorage y configurar tema
@@ -505,18 +511,48 @@ export default function HomePage() {
                           alt={`${product.name} - Imagen ${getActiveImageIndex(product.id) + 1}`}
                           className="w-full h-full object-cover transition-all duration-500"
                           loading="lazy"
+                          onTouchStart={(e) => {
+                            e.stopPropagation();
+                            setTouchStart(e.targetTouches[0].clientX);
+                          }}
+                          onTouchMove={(e) => {
+                            e.stopPropagation();
+                            setTouchEnd(e.targetTouches[0].clientX);
+                          }}
+                          onTouchEnd={(e) => {
+                            e.stopPropagation();
+                            if (!touchStart || !touchEnd) {
+                              setTouchStart(null);
+                              setTouchEnd(null);
+                              return;
+                            }
+                            const distance = touchStart - touchEnd;
+                            const isLeftSwipe = distance > 40;
+                            const isRightSwipe = distance < -40;
+
+                            if (isLeftSwipe || isRightSwipe) {
+                              e.preventDefault();
+                              if (isLeftSwipe) {
+                                nextImage(product.id, product.images!.length, e as any);
+                              } else {
+                                prevImage(product.id, product.images!.length, e as any);
+                              }
+                            }
+                            setTouchStart(null);
+                            setTouchEnd(null);
+                          }}
                         />
-                        {/* Botones de navegación (visibles en hover) */}
+                        {/* Botones de navegación (visibles en hover en desktop, siempre en mobile) */}
                         <button
                           onClick={(e) => prevImage(product.id, product.images!.length, e)}
-                          className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/85 text-white opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 z-10 cursor-pointer"
+                          className="absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/85 text-white md:opacity-0 md:group-hover/img:opacity-100 opacity-100 transition-opacity duration-300 z-10 cursor-pointer"
                           aria-label="Imagen anterior"
                         >
                           <ChevronLeft className="w-4 h-4" />
                         </button>
                         <button
                           onClick={(e) => nextImage(product.id, product.images!.length, e)}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/85 text-white opacity-0 group-hover/img:opacity-100 transition-opacity duration-300 z-10 cursor-pointer"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 hover:bg-black/85 text-white md:opacity-0 md:group-hover/img:opacity-100 opacity-100 transition-opacity duration-300 z-10 cursor-pointer"
                           aria-label="Siguiente imagen"
                         >
                           <ChevronRight className="w-4 h-4" />
@@ -868,161 +904,183 @@ export default function HomePage() {
           onClick={() => setSelectedProduct(null)}
         >
           <div 
-            className="bg-card-bg rounded-3xl w-full max-w-4xl border border-card-border shadow-2xl overflow-hidden flex flex-col md:flex-row animate-in zoom-in-95 duration-200 cursor-default"
+            className="bg-card-bg rounded-3xl w-full max-w-4xl border border-card-border shadow-2xl flex flex-col md:flex-row animate-in zoom-in-95 duration-200 cursor-default max-h-[90vh] md:max-h-[85vh] overflow-hidden relative"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Columna Izquierda: Imagen / Slider */}
-            <div className="md:w-1/2 relative bg-rose-50/5 dark:bg-rose-950/10 flex flex-col justify-center">
-              {/* Imagen Grande Activa */}
-              <div className="aspect-square w-full relative overflow-hidden flex items-center justify-center">
-                {selectedProduct.images && selectedProduct.images.length > 0 ? (
-                  <img
-                    src={selectedProduct.images[detailsActiveImageIndex]}
-                    alt={`${selectedProduct.name} - Detalle ${detailsActiveImageIndex + 1}`}
-                    className="w-full h-full object-cover transition-all duration-300"
-                  />
-                ) : (
-                  <img
-                    src={selectedProduct.image}
-                    alt={selectedProduct.name}
-                    className="w-full h-full object-cover"
-                  />
-                )}
+            {/* Botón cerrar universal (siempre visible en la esquina superior derecha del modal) */}
+            <button
+              onClick={() => setSelectedProduct(null)}
+              className="absolute top-4 right-4 z-30 p-2.5 rounded-full bg-black/60 md:bg-card-border/10 text-white md:text-txt-muted hover:bg-black/80 md:hover:text-rose-500 md:hover:bg-card-border/20 transition-colors cursor-pointer"
+              aria-label="Cerrar modal"
+            >
+              <X className="w-5 h-5" />
+            </button>
 
-                {/* Botón cerrar para móviles (en la esquina de la imagen) */}
-                <button
-                  onClick={() => setSelectedProduct(null)}
-                  className="absolute top-4 right-4 md:hidden p-2 rounded-full bg-black/70 text-white hover:bg-black/90 transition-colors z-20 cursor-pointer"
-                >
-                  <X className="w-5 h-5" />
-                </button>
-
-                {/* Controles de slider si hay más de 1 imagen */}
-                {selectedProduct.images && selectedProduct.images.length > 1 && (
-                  <>
-                    <button
-                      onClick={() => {
-                        const len = selectedProduct.images!.length;
-                        setDetailsActiveImageIndex((detailsActiveImageIndex - 1 + len) % len);
+            {/* Contenedor principal con scroll en móvil, layout flex */}
+            <div className="w-full h-full flex flex-col md:flex-row overflow-y-auto md:overflow-hidden">
+              {/* Columna Izquierda: Imagen / Slider */}
+              <div className="md:w-1/2 relative bg-rose-50/5 dark:bg-rose-950/10 flex flex-col justify-center shrink-0">
+                {/* Imagen Grande Activa */}
+                <div className="aspect-[4/3] md:aspect-square w-full relative overflow-hidden flex items-center justify-center">
+                  {selectedProduct.images && selectedProduct.images.length > 0 ? (
+                    <img
+                      src={selectedProduct.images[detailsActiveImageIndex]}
+                      alt={`${selectedProduct.name} - Detalle ${detailsActiveImageIndex + 1}`}
+                      className="w-full h-full object-cover transition-all duration-300 select-none touch-pan-y"
+                      onTouchStart={(e) => {
+                        setDetailsTouchStart(e.targetTouches[0].clientX);
                       }}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/85 text-white transition-all z-10 cursor-pointer"
-                    >
-                      <ChevronLeft className="w-5 h-5" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        const len = selectedProduct.images!.length;
-                        setDetailsActiveImageIndex((detailsActiveImageIndex + 1) % len);
+                      onTouchMove={(e) => {
+                        setDetailsTouchEnd(e.targetTouches[0].clientX);
                       }}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/85 text-white transition-all z-10 cursor-pointer"
-                    >
-                      <ChevronRight className="w-5 h-5" />
-                    </button>
-                  </>
-                )}
-              </div>
+                      onTouchEnd={(e) => {
+                        if (!detailsTouchStart || !detailsTouchEnd) return;
+                        const distance = detailsTouchStart - detailsTouchEnd;
+                        const isLeftSwipe = distance > 40;
+                        const isRightSwipe = distance < -40;
+                        const len = selectedProduct.images!.length;
 
-              {/* Tiras de miniaturas en la parte inferior si hay más de 1 imagen */}
-              {selectedProduct.images && selectedProduct.images.length > 1 && (
-                <div className="flex gap-2 p-3 overflow-x-auto justify-center border-t border-card-border/50 bg-card-bg/50">
-                  {selectedProduct.images.map((imgUrl, idx) => (
-                    <button
-                      key={idx}
-                      onClick={() => setDetailsActiveImageIndex(idx)}
-                      className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${
-                        detailsActiveImageIndex === idx ? 'border-rose-500 scale-105' : 'border-card-border opacity-70 hover:opacity-100'
-                      }`}
-                    >
-                      <img src={imgUrl} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-cover" />
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {/* Columna Derecha: Texto y Controles */}
-            <div className="md:w-1/2 p-6 md:p-8 flex flex-col justify-between relative bg-card-bg">
-              {/* Botón cerrar para pantallas grandes */}
-              <button
-                onClick={() => setSelectedProduct(null)}
-                className="absolute top-6 right-6 hidden md:block p-2 rounded-full text-txt-muted hover:text-rose-500 hover:bg-card-border/10 transition-colors cursor-pointer"
-              >
-                <X className="w-5 h-5" />
-              </button>
-
-              <div className="space-y-4">
-                {/* Categoría */}
-                <div>
-                  <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold uppercase tracking-wider border border-rose-500/20">
-                    {selectedProduct.category}
-                  </span>
-                </div>
-
-                {/* Nombre */}
-                <h3 className="text-xl md:text-2xl font-serif font-bold text-txt-primary leading-tight">
-                  {selectedProduct.name}
-                </h3>
-
-                {/* Precio */}
-                <div className="text-2xl font-extrabold text-rose-500 font-sans">
-                  Bs. {selectedProduct.price.toLocaleString('es-BO')}
-                </div>
-
-                <div className="border-t border-card-border/50 pt-4">
-                  <h4 className="text-xs font-bold text-txt-muted uppercase tracking-wider mb-2">Detalles del Regalo</h4>
-                  <p className="text-xs md:text-sm text-txt-secondary leading-relaxed font-medium">
-                    {selectedProduct.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Botón comprar / añadir al carrito */}
-              <div className="mt-8 pt-4 border-t border-card-border/50 space-y-3">
-                <div className="flex justify-between items-center text-xs">
-                  <span className="text-txt-muted font-bold">Stock disponible:</span>
-                  {selectedProduct.stock <= 0 ? (
-                    <span className="text-rose-655 font-extrabold uppercase">Agotado</span>
-                  ) : selectedProduct.stock <= 3 ? (
-                    <span className="text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/20 px-2.5 py-0.5 rounded-md animate-pulse">
-                      ¡Solo {selectedProduct.stock} unidades!
-                    </span>
+                        if (isLeftSwipe || isRightSwipe) {
+                          e.preventDefault();
+                          if (isLeftSwipe) {
+                            setDetailsActiveImageIndex((detailsActiveImageIndex + 1) % len);
+                          } else {
+                            setDetailsActiveImageIndex((detailsActiveImageIndex - 1 + len) % len);
+                          }
+                        }
+                        setDetailsTouchStart(null);
+                        setDetailsTouchEnd(null);
+                      }}
+                    />
                   ) : (
-                    <span className="text-emerald-600 dark:text-emerald-450 font-bold">{selectedProduct.stock} unidades</span>
+                    <img
+                      src={selectedProduct.image}
+                      alt={selectedProduct.name}
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+
+                  {/* Controles de slider si hay más de 1 imagen */}
+                  {selectedProduct.images && selectedProduct.images.length > 1 && (
+                    <>
+                      <button
+                        onClick={() => {
+                          const len = selectedProduct.images!.length;
+                          setDetailsActiveImageIndex((detailsActiveImageIndex - 1 + len) % len);
+                        }}
+                        className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/85 text-white transition-all z-10 cursor-pointer"
+                        aria-label="Imagen anterior"
+                      >
+                        <ChevronLeft className="w-5 h-5" />
+                      </button>
+                      <button
+                        onClick={() => {
+                          const len = selectedProduct.images!.length;
+                          setDetailsActiveImageIndex((detailsActiveImageIndex + 1) % len);
+                        }}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/85 text-white transition-all z-10 cursor-pointer"
+                        aria-label="Siguiente imagen"
+                      >
+                        <ChevronRight className="w-5 h-5" />
+                      </button>
+                    </>
                   )}
                 </div>
 
-                {(() => {
-                  const cartItem = cart.find(item => item.id === selectedProduct.id);
-                  const qty = cartItem ? cartItem.quantity : 0;
-                  const isOutOfStock = selectedProduct.stock <= 0;
-                  const isLimit = qty >= selectedProduct.stock;
+                {/* Tiras de miniaturas en la parte inferior si hay más de 1 imagen */}
+                {selectedProduct.images && selectedProduct.images.length > 1 && (
+                  <div className="flex gap-2 p-3 overflow-x-auto justify-center border-t border-card-border/50 bg-card-bg/50 scrollbar-none">
+                    {selectedProduct.images.map((imgUrl, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => setDetailsActiveImageIndex(idx)}
+                        className={`relative w-12 h-12 rounded-lg overflow-hidden border-2 shrink-0 transition-all ${
+                          detailsActiveImageIndex === idx ? 'border-rose-500 scale-105' : 'border-card-border opacity-70 hover:opacity-100'
+                        }`}
+                      >
+                        <img src={imgUrl} alt={`Miniatura ${idx + 1}`} className="w-full h-full object-cover" />
+                      </button>
+                    ))}
+                  </div>
+                )}
+              </div>
 
-                  return (
-                    <button
-                      onClick={() => {
-                        addToCart(selectedProduct);
-                      }}
-                      disabled={isOutOfStock || isLimit}
-                      className={`w-full py-3.5 px-4 rounded-full font-bold tracking-wide transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md ${
-                        isOutOfStock 
-                          ? 'bg-card-border/10 text-txt-muted cursor-not-allowed shadow-none'
-                          : isLimit
-                          ? 'bg-rose-100 dark:bg-rose-950/20 text-rose-600 dark:text-rose-455 cursor-not-allowed shadow-none'
-                          : 'bg-rose-500 hover:bg-rose-600 text-white hover:shadow-lg hover:shadow-rose-300/30'
-                      }`}
-                    >
-                      {isOutOfStock ? (
-                        'Agotado'
-                      ) : isLimit ? (
-                        'Límite de stock añadido'
-                      ) : (
-                        <>
-                          <ShoppingBag className="w-4 h-4" /> Añadir al carrito
-                        </>
-                      )}
-                    </button>
-                  );
-                })()}
+              {/* Columna Derecha: Texto y Controles */}
+              <div className="md:w-1/2 p-6 md:p-8 flex flex-col justify-between relative bg-card-bg md:overflow-y-auto">
+                <div className="space-y-4">
+                  {/* Categoría */}
+                  <div>
+                    <span className="px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 dark:text-rose-400 text-[10px] font-bold uppercase tracking-wider border border-rose-500/20">
+                      {selectedProduct.category}
+                    </span>
+                  </div>
+
+                  {/* Nombre */}
+                  <h3 className="text-xl md:text-2xl font-serif font-bold text-txt-primary leading-tight">
+                    {selectedProduct.name}
+                  </h3>
+
+                  {/* Precio */}
+                  <div className="text-2xl font-extrabold text-rose-500 font-sans">
+                    Bs. {selectedProduct.price.toLocaleString('es-BO')}
+                  </div>
+
+                  <div className="border-t border-card-border/50 pt-4">
+                    <h4 className="text-xs font-bold text-txt-muted uppercase tracking-wider mb-2">Detalles del Regalo</h4>
+                    <p className="text-xs md:text-sm text-txt-secondary leading-relaxed font-medium">
+                      {selectedProduct.description}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Botón comprar / añadir al carrito */}
+                <div className="mt-8 pt-4 border-t border-card-border/50 space-y-3 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <div className="flex justify-between items-center text-xs">
+                    <span className="text-txt-muted font-bold">Stock disponible:</span>
+                    {selectedProduct.stock <= 0 ? (
+                      <span className="text-rose-600 font-extrabold uppercase">Agotado</span>
+                    ) : selectedProduct.stock <= 3 ? (
+                      <span className="text-amber-600 dark:text-amber-400 font-bold bg-amber-50 dark:bg-amber-950/20 px-2.5 py-0.5 rounded-md animate-pulse">
+                        ¡Solo {selectedProduct.stock} unidades!
+                      </span>
+                    ) : (
+                      <span className="text-emerald-600 dark:text-emerald-450 font-bold">{selectedProduct.stock} unidades</span>
+                    )}
+                  </div>
+
+                  {(() => {
+                    const cartItem = cart.find(item => item.id === selectedProduct.id);
+                    const qty = cartItem ? cartItem.quantity : 0;
+                    const isOutOfStock = selectedProduct.stock <= 0;
+                    const isLimit = qty >= selectedProduct.stock;
+
+                    return (
+                      <button
+                        onClick={() => {
+                          addToCart(selectedProduct);
+                        }}
+                        disabled={isOutOfStock || isLimit}
+                        className={`w-full py-3.5 px-4 rounded-full font-bold tracking-wide transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md ${
+                          isOutOfStock 
+                            ? 'bg-card-border/10 text-txt-muted cursor-not-allowed shadow-none'
+                            : isLimit
+                            ? 'bg-rose-100 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 cursor-not-allowed shadow-none'
+                            : 'bg-rose-500 hover:bg-rose-600 text-white hover:shadow-lg hover:shadow-rose-300/30'
+                        }`}
+                      >
+                        {isOutOfStock ? (
+                          'Agotado'
+                        ) : isLimit ? (
+                          'Límite de stock añadido'
+                        ) : (
+                          <>
+                            <ShoppingBag className="w-4 h-4" /> Añadir al carrito
+                          </>
+                        )}
+                      </button>
+                    );
+                  })()}
+                </div>
               </div>
             </div>
           </div>

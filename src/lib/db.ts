@@ -1,3 +1,4 @@
+// Force redeploy to trigger Vercel environment variables update for Vercel KV
 import fs from 'fs';
 import path from 'path';
 import { kv } from '@vercel/kv';

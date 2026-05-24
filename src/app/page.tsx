@@ -227,7 +227,8 @@ export default function HomePage() {
       message += `   _Subtotal:_ Bs. ${(item.price * item.quantity).toLocaleString('es-BO')}\n\n`;
     });
     
-    message += `${line}\n💝 *TOTAL A PAGAR:* Bs. ${calculateTotal().toLocaleString('es-BO')}\n${line}\n\n`;
+    message += `${line}\n💝 *TOTAL A PAGAR:* Bs. ${calculateTotal().toLocaleString('es-BO')}\n`;
+    message += `⚠️ _*Nota:* Toda reserva se realiza con el 50% de adelanto (sin derecho a devolución)._\n${line}\n\n`;
     message += `💬 _Hola! Quiero coordinar el envío de estos regalos para Mamá. ¿Me envían los datos para transferencia o código QR?_`;
 
     const encodedText = encodeURIComponent(message);
@@ -884,6 +885,10 @@ export default function HomePage() {
                           <MessageCircle className="w-5 h-5 fill-white text-emerald-500" />
                           Finalizar compra por WhatsApp
                         </button>
+                        <p className="text-[10px] text-amber-500/90 dark:text-amber-400 font-bold text-center flex items-center justify-center gap-1.5 bg-amber-500/5 py-1.5 px-3 rounded-lg border border-amber-500/10">
+                          <span>⚠️</span>
+                          <span>Toda reserva se realiza con el 50% de adelanto (sin derecho a devolución).</span>
+                        </p>
                         <p className="text-[10px] text-txt-muted font-medium text-center">
                           El pedido se enviará detallado por chat para acordar la dirección de entrega y el pago (QR / Transferencia).
                         </p>
@@ -1055,29 +1060,35 @@ export default function HomePage() {
                     const isLimit = qty >= selectedProduct.stock;
 
                     return (
-                      <button
-                        onClick={() => {
-                          addToCart(selectedProduct);
-                        }}
-                        disabled={isOutOfStock || isLimit}
-                        className={`w-full py-3.5 px-4 rounded-full font-bold tracking-wide transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md ${
-                          isOutOfStock 
-                            ? 'bg-card-border/10 text-txt-muted cursor-not-allowed shadow-none'
-                            : isLimit
-                            ? 'bg-rose-100 dark:bg-rose-950/20 text-rose-600 dark:text-rose-400 cursor-not-allowed shadow-none'
-                            : 'bg-rose-500 hover:bg-rose-600 text-white hover:shadow-lg hover:shadow-rose-300/30'
-                        }`}
-                      >
-                        {isOutOfStock ? (
-                          'Agotado'
-                        ) : isLimit ? (
-                          'Límite de stock añadido'
-                        ) : (
-                          <>
-                            <ShoppingBag className="w-4 h-4" /> Añadir al carrito
-                          </>
-                        )}
-                      </button>
+                      <div className="space-y-3">
+                        <button
+                          onClick={() => {
+                            addToCart(selectedProduct);
+                          }}
+                          disabled={isOutOfStock || isLimit}
+                          className={`w-full py-3.5 px-4 rounded-full font-bold tracking-wide transition-all duration-300 flex items-center justify-center gap-2 cursor-pointer shadow-md ${
+                            isOutOfStock 
+                              ? 'bg-card-border/10 text-txt-muted cursor-not-allowed shadow-none'
+                              : isLimit
+                              ? 'bg-rose-100 dark:bg-rose-950/20 text-rose-600 dark:text-rose-450 cursor-not-allowed shadow-none'
+                              : 'bg-rose-500 hover:bg-rose-600 text-white hover:shadow-lg hover:shadow-rose-300/30'
+                          }`}
+                        >
+                          {isOutOfStock ? (
+                            'Agotado'
+                          ) : isLimit ? (
+                            'Límite de stock añadido'
+                          ) : (
+                            <>
+                              <ShoppingBag className="w-4 h-4" /> Añadir al carrito
+                            </>
+                          )}
+                        </button>
+                        <p className="text-[10px] text-amber-500/90 dark:text-amber-400 font-bold text-center flex items-center justify-center gap-1.5 bg-amber-500/5 py-1.5 px-3 rounded-lg border border-amber-500/10">
+                          <span>⚠️</span>
+                          <span>Reserva con el 50% de adelanto (sin derecho a devolución).</span>
+                        </p>
+                      </div>
                     );
                   })()}
                 </div>

@@ -1,12 +1,8 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { kv } from '@vercel/kv';
+import { sql, isDbEnabled } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
-
-const isKVEnabled = () => {
-  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
-};
 
 export async function GET() {
   try {
@@ -18,33 +14,31 @@ export async function GET() {
       return NextResponse.json({ error: 'No autorizado' }, { status: 401 });
     }
 
-    const kvEnabled = isKVEnabled();
-    let kvWorking = false;
-    let kvError = null;
+    const dbEnabled = isDbEnabled();
+    let dbWorking = false;
+    let dbError = null;
     let productsCount = 0;
 
-    if (kvEnabled) {
+    if (dbEnabled) {
       try {
-        // Intentar leer de KV para verificar el estado de la conexión
-        const testVal = await kv.get('mama_products');
-        kvWorking = true;
-        if (Array.isArray(testVal)) {
-          productsCount = testVal.length;
-        }
+        // Intentar leer de Postgres para verificar el estado de la conexión
+        const result = await sql`SELECT COUNT(*)::int as count FROM products`;
+        dbWorking = true;
+        productsCount = result[0].count;
       } catch (err: any) {
-        kvWorking = false;
-        kvError = err.message || String(err);
+        dbWorking = false;
+        dbError = err.message || String(err);
       }
     }
 
     return NextResponse.json({
-      kvEnabled,
-      kvWorking,
-      kvError,
+      kvEnabled: dbEnabled, // Mantenemos el nombre de campo para compatibilidad con el frontend
+      kvWorking: dbWorking,
+      kvError: dbError,
       productsCount,
       env: {
-        hasUrl: !!process.env.KV_REST_API_URL,
-        hasToken: !!process.env.KV_REST_API_TOKEN,
+        hasUrl: !!process.env.DATABASE_URL,
+        hasToken: false, // Ya no es necesario en Postgres
         nodeEnv: process.env.NODE_ENV
       }
     });

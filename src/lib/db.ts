@@ -1,7 +1,6 @@
-// Force redeploy to trigger Vercel environment variables update for Vercel KV
 import fs from 'fs';
 import path from 'path';
-import { kv } from '@vercel/kv';
+import postgres from 'postgres';
 
 export interface Product {
   id: string;
@@ -9,8 +8,8 @@ export interface Product {
   description: string;
   price: number;
   stock: number;
-  image: string; // Se mantiene por retrocompatibilidad
-  images?: string[]; // Soporte para múltiples fotos
+  image: string; 
+  images?: string[]; 
   category: string;
 }
 
@@ -22,40 +21,133 @@ export interface Category {
 const dbFilePath = path.join(process.cwd(), 'src/data/products.json');
 const categoriesFilePath = path.join(process.cwd(), 'src/data/categories.json');
 
-// Fallback en memoria global para Vercel en caso de que no haya KV
+// Fallback en memoria global para Vercel en caso de que no haya base de datos
 declare global {
   var __memoryProducts: Product[] | undefined;
   var __memoryCategories: Category[] | undefined;
 }
 
-const isKVEnabled = () => {
-  return !!(process.env.KV_REST_API_URL && process.env.KV_REST_API_TOKEN);
+// Configuración de PostgreSQL cliente seguro para serverless
+let sql: any = null;
+if (process.env.DATABASE_URL) {
+  try {
+    sql = postgres(process.env.DATABASE_URL, {
+      ssl: 'require',
+      max: 1,
+      idle_timeout: 20,
+      connect_timeout: 10,
+    });
+  } catch (err) {
+    console.error("Error al instanciar el cliente PostgreSQL:", err);
+  }
+}
+
+export const isDbEnabled = () => {
+  return !!(process.env.DATABASE_URL && sql);
 };
 
-export async function getProducts(): Promise<Product[]> {
-  let products: Product[] = [];
+let dbInitializedPromise: Promise<void> | null = null;
 
-  // 1. Si Vercel KV está configurado (por ejemplo, al conectarlo en Vercel con 1 clic), lo usamos
-  if (isKVEnabled()) {
-    try {
-      const kvProducts = await kv.get<Product[]>('mama_products');
-      if (kvProducts) {
-        products = kvProducts;
-      } else {
-        // Inicializar KV con el contenido del archivo local si está vacío
-        const localProducts = getLocalProducts();
-        await kv.set('mama_products', localProducts);
-        products = localProducts;
+async function ensureDbInitialized() {
+  if (!isDbEnabled()) return;
+  if (!dbInitializedPromise) {
+    dbInitializedPromise = (async () => {
+      try {
+        // Crear tabla de categorías
+        await sql`
+          CREATE TABLE IF NOT EXISTS categories (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL
+          )
+        `;
+        // Crear tabla de productos
+        await sql`
+          CREATE TABLE IF NOT EXISTS products (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            description TEXT NOT NULL,
+            price NUMERIC NOT NULL,
+            stock INTEGER NOT NULL,
+            image TEXT NOT NULL,
+            images TEXT[] NOT NULL,
+            category TEXT NOT NULL
+          )
+        `;
+
+        // Sembrar categorías si está vacía
+        const catCountResult = await sql`SELECT COUNT(*)::int as count FROM categories`;
+        if (catCountResult[0].count === 0) {
+          console.log("Sembrando categorías en PostgreSQL...");
+          const localCategories = getLocalCategories();
+          if (localCategories.length > 0) {
+            for (const cat of localCategories) {
+              await sql`
+                INSERT INTO categories (id, name)
+                VALUES (${cat.id}, ${cat.name})
+                ON CONFLICT (id) DO NOTHING
+              `;
+            }
+          }
+        }
+
+        // Sembrar productos si está vacía
+        const prodCountResult = await sql`SELECT COUNT(*)::int as count FROM products`;
+        if (prodCountResult[0].count === 0) {
+          console.log("Sembrando productos en PostgreSQL...");
+          const localProducts = getLocalProducts();
+          if (localProducts.length > 0) {
+            for (const prod of localProducts) {
+              await sql`
+                INSERT INTO products (id, name, description, price, stock, image, images, category)
+                VALUES (
+                  ${prod.id}, 
+                  ${prod.name}, 
+                  ${prod.description}, 
+                  ${prod.price}, 
+                  ${prod.stock}, 
+                  ${prod.image}, 
+                  ${prod.images || [prod.image]}, 
+                  ${prod.category}
+                )
+                ON CONFLICT (id) DO NOTHING
+              `;
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error al inicializar las tablas de PostgreSQL:", error);
+        dbInitializedPromise = null; // Reiniciar en caso de error para reintentar
+        throw error;
       }
+    })();
+  }
+  return dbInitializedPromise;
+}
+
+export async function getProducts(): Promise<Product[]> {
+  if (isDbEnabled()) {
+    try {
+      await ensureDbInitialized();
+      const rows = await sql`
+        SELECT id, name, description, price::float as price, stock, image, images, category 
+        FROM products
+      `;
+      return rows.map((r: any) => ({
+        id: r.id,
+        name: r.name,
+        description: r.description,
+        price: r.price,
+        stock: r.stock,
+        image: r.image,
+        images: r.images,
+        category: r.category
+      }));
     } catch (error) {
-      console.error("Error leyendo de Vercel KV, usando fallback local/memoria:", error);
-      products = globalThis.__memoryProducts || getLocalProducts();
+      console.error("Error leyendo de Postgres, usando fallback local/memoria:", error);
     }
-  } else {
-    products = globalThis.__memoryProducts || getLocalProducts();
   }
 
-  // Normalizar imágenes para asegurar compatibilidad con productos antiguos
+  const products = globalThis.__memoryProducts || getLocalProducts();
   return products.map(p => ({
     ...p,
     images: p.images && p.images.length > 0 ? p.images : [p.image]
@@ -75,45 +167,56 @@ function getLocalProducts(): Product[] {
 }
 
 export async function saveProducts(products: Product[]): Promise<boolean> {
-  // 1. Si Vercel KV está habilitado, guardamos allí
-  if (isKVEnabled()) {
+  if (isDbEnabled()) {
     try {
-      await kv.set('mama_products', products);
+      await ensureDbInitialized();
+      await sql.begin(async (sqlTrans: any) => {
+        await sqlTrans`TRUNCATE TABLE products`;
+        if (products.length > 0) {
+          for (const p of products) {
+            await sqlTrans`
+              INSERT INTO products (id, name, description, price, stock, image, images, category)
+              VALUES (
+                ${p.id}, 
+                ${p.name}, 
+                ${p.description}, 
+                ${p.price}, 
+                ${p.stock}, 
+                ${p.image}, 
+                ${p.images || [p.image]}, 
+                ${p.category}
+              )
+            `;
+          }
+        }
+      });
       return true;
     } catch (error) {
-      console.error("Error guardando en Vercel KV:", error);
+      console.error("Error guardando productos en PostgreSQL:", error);
     }
   }
 
-  // 2. Si no, guardamos localmente (para desarrollo) y en memoria (para producción temporal)
   globalThis.__memoryProducts = products;
   try {
     fs.writeFileSync(dbFilePath, JSON.stringify(products, null, 2), 'utf8');
     return true;
   } catch (error) {
-    console.warn(
-      "Advertencia: No se pudo escribir en el archivo físico (normal en Vercel Serverless). Guardado temporalmente en memoria:",
-      error
-    );
+    console.warn("Advertencia: No se pudo escribir en el archivo físico. Guardado temporalmente en memoria:", error);
     return true;
   }
 }
 
-// Métodos para el CRUD de Categorías
-
 export async function getCategories(): Promise<Category[]> {
-  if (isKVEnabled()) {
+  if (isDbEnabled()) {
     try {
-      const categories = await kv.get<Category[]>('mama_categories');
-      if (categories) {
-        return categories;
-      }
-      // Inicializar KV con el contenido del archivo local si está vacío
-      const localCategories = getLocalCategories();
-      await kv.set('mama_categories', localCategories);
-      return localCategories;
+      await ensureDbInitialized();
+      const rows = await sql`SELECT id, name FROM categories`;
+      return rows.map((r: any) => ({
+        id: r.id,
+        name: r.name
+      }));
     } catch (error) {
-      console.error("Error leyendo de Vercel KV las categorías, usando fallback:", error);
+      console.error("Error leyendo categorías de Postgres, usando fallback:", error);
     }
   }
 
@@ -136,12 +239,23 @@ function getLocalCategories(): Category[] {
 }
 
 export async function saveCategories(categories: Category[]): Promise<boolean> {
-  if (isKVEnabled()) {
+  if (isDbEnabled()) {
     try {
-      await kv.set('mama_categories', categories);
+      await ensureDbInitialized();
+      await sql.begin(async (sqlTrans: any) => {
+        await sqlTrans`TRUNCATE TABLE categories`;
+        if (categories.length > 0) {
+          for (const c of categories) {
+            await sqlTrans`
+              INSERT INTO categories (id, name)
+              VALUES (${c.id}, ${c.name})
+            `;
+          }
+        }
+      });
       return true;
     } catch (error) {
-      console.error("Error guardando categorías en Vercel KV:", error);
+      console.error("Error guardando categorías en PostgreSQL:", error);
     }
   }
 
@@ -150,10 +264,10 @@ export async function saveCategories(categories: Category[]): Promise<boolean> {
     fs.writeFileSync(categoriesFilePath, JSON.stringify(categories, null, 2), 'utf8');
     return true;
   } catch (error) {
-    console.warn(
-      "Advertencia: No se pudo escribir en el archivo físico de categorías (normal en Vercel Serverless). Guardado temporalmente en memoria:",
-      error
-    );
+    console.warn("Advertencia: No se pudo escribir en el archivo físico de categorías. Guardado temporalmente en memoria:", error);
     return true;
   }
 }
+
+// Exportar la conexión sql para consultas personalizadas externas
+export { sql };

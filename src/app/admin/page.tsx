@@ -662,19 +662,19 @@ export default function AdminPage() {
             <div className="space-y-1">
               <h3 className="font-bold text-sm flex items-center gap-2">
                 <span className={`w-2.5 h-2.5 rounded-full ${dbStatus.kvWorking ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500 animate-ping'}`} />
-                Base de Datos: {dbStatus.kvWorking ? 'Vercel KV Activa' : 'Modo Fallback / Memoria'}
+                Base de Datos: {dbStatus.kvWorking ? 'Supabase / Postgres Activa' : 'Modo Fallback / Memoria'}
               </h3>
               <p className="text-xs text-txt-secondary max-w-2xl font-medium">
                 {dbStatus.kvWorking 
-                  ? `Conexión en vivo activa. Los cambios persistirán de forma permanente en producción. (${dbStatus.productsCount} productos en KV).`
-                  : `Advertencia: Las variables de Vercel KV no están configuradas o la conexión está fallando. Los cambios solo se guardarán temporalmente en la memoria del servidor y se borrarán al reiniciar el contenedor en Vercel. Error: ${dbStatus.kvError || 'Sin credenciales'}`}
+                  ? `Conexión en vivo activa. Los cambios persistirán de forma permanente en producción. (${dbStatus.productsCount} productos en Supabase).`
+                  : `Advertencia: La variable de entorno DATABASE_URL no está configurada o la conexión está fallando. Los cambios solo se guardarán temporalmente en la memoria del servidor y se borrarán al reiniciar el contenedor en Vercel. Error: ${dbStatus.kvError || 'Sin credenciales'}`}
               </p>
             </div>
             
             {!dbStatus.kvWorking && (
               <button
                 onClick={() => {
-                  alert("Para solucionar esto:\n1. Asegúrate de haber creado una base de datos Vercel KV en el panel de Vercel.\n2. Asegúrate de enlazar (link) la base de datos KV a este proyecto en Vercel.\n3. Si estás en local, crea un archivo .env.local con las variables de conexión de tu KV.");
+                  alert("Para solucionar esto:\n1. Crea un proyecto gratuito en Supabase (o cualquier base de datos PostgreSQL).\n2. Copia la URI de conexión (Connection String / URI) que empieza con postgresql://\n3. Agrégala como variable de entorno llamada DATABASE_URL en el panel de Vercel de tu proyecto.\n4. Ve a la pestaña Deployments en Vercel y redespliega la aplicación para que aplique los cambios.");
                 }}
                 className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer"
               >

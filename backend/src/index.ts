@@ -13,6 +13,7 @@ import categoriesRouter from './routes/categories.js';
 import adminRouter from './routes/admin.js';
 import uploadRouter from './routes/upload.js';
 import cronRouter from './routes/cron.js';
+import settingsRouter from './routes/settings.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -62,6 +63,7 @@ app.use('/api/categories', categoriesRouter);
 app.use('/api/admin', adminRouter);
 app.use('/api/upload', uploadRouter);
 app.use('/api/cron', cronRouter);
+app.use('/api/settings', settingsRouter);
 
 // Iniciar servidor
 app.listen(PORT, async () => {

@@ -1,6 +1,7 @@
 services:
   db:
     image: postgres:16-alpine
+    container_name: diadelamadre-db
     restart: unless-stopped
     environment:
       POSTGRES_USER: ${DB_USER:-postgres}
@@ -20,6 +21,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    container_name: diadelamadre-backend
     restart: unless-stopped
     environment:
       PORT: 5000
@@ -48,6 +50,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    container_name: diadelamadre-frontend
     restart: unless-stopped
     environment:
       PORT: 3000

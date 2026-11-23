@@ -16,7 +16,7 @@ router.get('/', async (_req: Request, res: Response) => {
 // POST /api/products
 router.post('/', async (req: Request, res: Response) => {
   try {
-    const { name, description, price, stock, image, images, category } = req.body;
+    const { name, description, price, stock, image, images, category, season } = req.body;
 
     if (!name || !description || price === undefined || stock === undefined || !category) {
       res.status(400).json({ error: 'Faltan campos obligatorios' });
@@ -59,6 +59,7 @@ router.post('/', async (req: Request, res: Response) => {
       image: finalImages[0],
       images: finalImages,
       category: category.trim(),
+      season: season ? season.trim() : 'General',
     };
 
     products.push(newProduct);
@@ -74,7 +75,7 @@ router.post('/', async (req: Request, res: Response) => {
 router.put('/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
-    const { name, description, price, stock, image, images, category } = req.body;
+    const { name, description, price, stock, image, images, category, season } = req.body;
 
     const products = await getProducts();
     const index = products.findIndex((p) => p.id === id);
@@ -114,6 +115,7 @@ router.put('/:id', async (req: Request, res: Response) => {
       image: finalImages && finalImages.length > 0 ? finalImages[0] : (image ?? currentProduct.image),
       images: finalImages ?? currentProduct.images,
       category: category !== undefined ? category.trim() : currentProduct.category,
+      season: season !== undefined ? season.trim() : (currentProduct.season || 'General'),
     };
 
     products[index] = updatedProduct;

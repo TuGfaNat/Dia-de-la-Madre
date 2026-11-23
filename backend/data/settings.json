@@ -1,0 +1,50 @@
+{
+  "storeName": "Shiro Neko Lab",
+  "tagline": "Impresión 3D, Cajas de Regalo & Bazar Creativo",
+  "activeSeason": "Navidad",
+  "themeMode": "warm",
+  "whatsappNumber": "59175767332",
+  "customBannerText": "¡Hacemos realidad tus ideas en 3D y armamos cajas de regalo personalizadas con arreglos únicos!",
+  "seasons": [
+    {
+      "id": "Navidad",
+      "name": "Navidad",
+      "label": "🎄 Especial Navidad",
+      "badge": "🎄 Edición Navideña & 3D 2026",
+      "theme": "christmas",
+      "bannerTitle": "Magia, Impresiones 3D & Detalles Navideños que",
+      "bannerHighlight": "Iluminan Corazones",
+      "bannerSubtitle": "Figuras y adornos en 3D, cajas navideñas artesanales personalizadas y detalles únicos de Shiro Neko Lab para estas fiestas."
+    },
+    {
+      "id": "Permanente",
+      "name": "Permanente",
+      "label": "✨ Bazar & Impresión 3D",
+      "badge": "🐾 Shiro Neko Lab • Bazar Creativo & 3D",
+      "theme": "warm_craft",
+      "bannerTitle": "Impresiones 3D, Cajas Personalizadas &",
+      "bannerHighlight": "Creaciones de Autor",
+      "bannerSubtitle": "Litofanías, figuras coleccionables, macetas geométricas, papelería y detalles a medida hechos con amor."
+    },
+    {
+      "id": "San Valentín",
+      "name": "San Valentín",
+      "label": "💖 San Valentín & Amor",
+      "badge": "💖 Colección Amor & Amistad",
+      "theme": "love",
+      "bannerTitle": "Sorprende a esa Persona Especial con",
+      "bannerHighlight": "Detalles Únicos en 3D",
+      "bannerSubtitle": "Cajas sorpresa, litofanías con fotos iluminadas y arreglos personalizados para celebrar el amor y la amistad."
+    },
+    {
+      "id": "Día de la Madre",
+      "name": "Día de la Madre",
+      "label": "🌸 Día de la Madre",
+      "badge": "🌸 Edición Especial Mamá",
+      "theme": "spring",
+      "bannerTitle": "Celebra a Mamá con Detalles que",
+      "bannerHighlight": "Perduran en el Corazón",
+      "bannerSubtitle": "Ramos con detalles en 3D, sombrereras y cajas de regalo pensadas para consentir a la reina del hogar."
+    }
+  ]
+}

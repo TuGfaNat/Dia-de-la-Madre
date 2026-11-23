@@ -1,56 +1,102 @@
 [
   {
-    "id": "1",
-    "name": "Ramo Rosas Eternas & Oro",
-    "description": "Exclusivo arreglo de 12 rosas seleccionadas en tonos pastel, presentadas en sombrerera prémium con detalles en relieve dorado. Incluye tarjeta con dedicatoria personalizada.",
-    "price": 4500,
+    "id": "3d-nav-1",
+    "name": "Litofanía Navideña 3D con Luz LED Personalizada",
+    "description": "Lámpara litofanía impresa en 3D en alta resolución. Al encender la luz LED cálida interior, tu fotografía o dedicatoria familiar se proyecta con efecto mágico tridimensional. Base de madera natural.",
+    "price": 8500,
+    "stock": 15,
+    "image": "https://images.unsplash.com/photo-1543257580-7269da773bf5?auto=format&fit=crop&q=80&w=600",
+    "category": "Impresión 3D",
+    "season": "Navidad"
+  },
+  {
+    "id": "box-nav-2",
+    "name": "Caja Sorpresa Navideña Shiro Neko & Mini Neko 3D",
+    "description": "Caja de regalo armada a mano con diseño temático de Shiro Neko. Incluye figura coleccionable de gatito navideño impresa en 3D, galletas artesanales de jengibre, vela de soya aromática y tarjeta dedicatoria en relieve.",
+    "price": 6800,
+    "stock": 20,
+    "image": "https://images.unsplash.com/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&q=80&w=600",
+    "category": "Cajas de Regalo",
+    "season": "Navidad"
+  },
+  {
+    "id": "3d-nav-3",
+    "name": "Esferas Navideñas 3D Caladas con Nombre (Pack x4)",
+    "description": "Esferas personalizadas impresas en 3D con filamento aperlado y dorado. Diseños calados con siluetas de copos de nieve, estrellas y nombres personalizados para colgar en el árbol.",
+    "price": 3800,
+    "stock": 30,
+    "image": "https://images.unsplash.com/photo-1512389142860-9c449e58a543?auto=format&fit=crop&q=80&w=600",
+    "category": "Impresión 3D",
+    "season": "Navidad"
+  },
+  {
+    "id": "arr-nav-4",
+    "name": "Arreglo Navideño en Florero Geométrico 3D",
+    "description": "Florero de diseño geométrico impreso en 3D con textura espiralada color terracota/verde pino, acompañado de follaje natural de pino, ramas de canela, piñas secas y rosas rojas.",
+    "price": 5400,
+    "stock": 12,
+    "image": "https://images.unsplash.com/photo-1576919228236-a097c32a5cd4?auto=format&fit=crop&q=80&w=600",
+    "category": "Arreglos Florales",
+    "season": "Navidad"
+  },
+  {
+    "id": "3d-nav-5",
+    "name": "Cortadores de Galletas 3D Temáticos Neko (Pack x4)",
+    "description": "Set de 4 cortadores con expulsor para masa de galletas y fondant, modelados con caritas de gatitos navideños, patitas y copos de nieve. Impresos en PLA biodegradable grado alimenticio.",
+    "price": 2200,
+    "stock": 25,
+    "image": "https://images.unsplash.com/photo-1576618148400-f54bed99fcfd?auto=format&fit=crop&q=80&w=600",
+    "category": "Bazar & Creativos",
+    "season": "Navidad"
+  },
+  {
+    "id": "mug-nav-6",
+    "name": "Taza Cerámica Shiro Neko con Cucharita Gatito 3D",
+    "description": "Taza artesanal con diseño navideño 'Cozy Christmas', acompañada de cucharita especial con topper de gatito modelado e impreso en 3D.",
+    "price": 2900,
+    "stock": 18,
+    "image": "https://images.unsplash.com/photo-1577083552431-6e5fd01aa342?auto=format&fit=crop&q=80&w=600",
+    "category": "Bazar & Creativos",
+    "season": "Navidad"
+  },
+  {
+    "id": "3d-perm-1",
+    "name": "Maceta Geométrica Gato Shiro Neko con Suculenta",
+    "description": "Maceta decorativa modelada con estilo low-poly de gatito durmiendo, impresa en 3D con filamento marmolado ecológico. Incluye suculenta viva y drenaje inferior.",
+    "price": 2600,
+    "stock": 25,
+    "image": "https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&q=80&w=600",
+    "category": "Impresión 3D",
+    "season": "Permanente"
+  },
+  {
+    "id": "box-perm-2",
+    "name": "Caja Organizadora Hexagonal de Madera & Topper 3D",
+    "description": "Caja artesanal tipo alhajero o para escritorio con divisiones modulares impresas en 3D. Personalizable con nombre o dedicatoria en la tapa.",
+    "price": 4200,
+    "stock": 15,
+    "image": "https://images.unsplash.com/photo-1544716278-ca5e3f4abd8c?auto=format&fit=crop&q=80&w=600",
+    "category": "Cajas de Regalo",
+    "season": "Permanente"
+  },
+  {
+    "id": "arr-mama-1",
+    "name": "Ramo Rosas Eternas con Topper 3D 'Mamá'",
+    "description": "Exclusivo arreglo de 12 rosas seleccionadas presentadas en sombrerera prémium con detalle de mariposas y letrero calado en relieve impreso en 3D dorado.",
+    "price": 4900,
     "stock": 15,
     "image": "https://images.unsplash.com/photo-1561181286-d3fee7d55364?auto=format&fit=crop&q=80&w=600",
-    "category": "Flores"
+    "category": "Arreglos Florales",
+    "season": "Día de la Madre"
   },
   {
-    "id": "2",
-    "name": "Collar Corazón de Mamá",
-    "description": "Delicado collar de plata de ley 925 bañado en oro rosa de 18k, con un dije en forma de corazón entrelazado decorado con cristales de zirconia brillante de alta pureza.",
-    "price": 12000,
-    "stock": 8,
-    "image": "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?auto=format&fit=crop&q=80&w=600",
-    "category": "Joyería"
-  },
-  {
-    "id": "3",
-    "name": "Caja Chocolates de Autor",
-    "description": "Selección de 24 bombones artesanales elaborados con cacao de origen belga. Rellenos gourmet de praliné, caramelo salado, frutos rojos y ganache de lavanda.",
-    "price": 3200,
-    "stock": 25,
-    "image": "https://images.unsplash.com/photo-1511381939415-e44015466834?auto=format&fit=crop&q=80&w=600",
-    "category": "Chocolates"
-  },
-  {
-    "id": "4",
-    "name": "Kit Spa de Lujo Lavanda",
-    "description": "Una experiencia de relajación completa en casa. Incluye sales de baño del Himalaya, aceite corporal de lavanda y almendras, vela de soya aromática y toalla de algodón orgánico.",
-    "price": 6800,
-    "stock": 10,
-    "image": "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=600",
-    "category": "Spa"
-  },
-  {
-    "id": "5",
-    "name": "Taza de Cerámica 'Mamá Te Amo'",
-    "description": "Taza artesanal de cerámica gres con asa esmaltada en oro real de 24k. Perfecta para recordarle tu amor en cada taza de café o té de la mañana.",
-    "price": 2500,
-    "stock": 30,
-    "image": "https://images.unsplash.com/photo-1514432324607-a09d9b4aefdd?auto=format&fit=crop&q=80&w=600",
-    "category": "Regalos"
-  },
-  {
-    "id": "6",
-    "name": "Arreglo Globos & Orquídea",
-    "description": "Elegante orquídea phalaenopsis de dos varas en maceta de cerámica blanca, acompañada de un globo burbuja personalizado y helio de alta duración.",
-    "price": 8500,
-    "stock": 5,
-    "image": "https://images.unsplash.com/photo-1525310072745-f49212b5ac6d?auto=format&fit=crop&q=80&w=600",
-    "category": "Flores"
+    "id": "3d-love-1",
+    "name": "Llaveros Magnéticos 3D Pareja de Gatitos Yin-Yang",
+    "description": "Dúo de llaveros de gatitos que se unen con imanes de neodimio formando un corazón. Impresos en dos colores contrastantes (blanco y negro perla).",
+    "price": 2400,
+    "stock": 35,
+    "image": "https://images.unsplash.com/photo-1518895949257-7621c3c786d7?auto=format&fit=crop&q=80&w=600",
+    "category": "Impresión 3D",
+    "season": "San Valentín"
   }
 ]

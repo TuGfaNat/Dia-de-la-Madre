@@ -1,0 +1,16 @@
+{
+  "name": "diadelamadre-root",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Catálogo & Tienda Día de la Madre con backend Express y frontend Next.js",
+  "scripts": {
+    "dev:frontend": "npm --prefix frontend run dev",
+    "dev:backend": "npm --prefix backend run dev",
+    "build:frontend": "npm --prefix frontend run build",
+    "build:backend": "npm --prefix backend run build",
+    "build": "npm run build:backend && npm run build:frontend",
+    "install:all": "npm --prefix frontend install && npm --prefix backend install",
+    "start:backend": "npm --prefix backend start",
+    "start:frontend": "npm --prefix frontend start"
+  }
+}

@@ -14,8 +14,6 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
-    networks:
-      - app-network
 
   backend:
     build:
@@ -43,8 +41,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 3
-    networks:
-      - app-network
 
   frontend:
     build:
@@ -62,12 +58,6 @@ services:
         condition: service_healthy
     expose:
       - "3000"
-    networks:
-      - app-network
-
-networks:
-  app-network:
-    driver: bridge
 
 volumes:
   pgdata:

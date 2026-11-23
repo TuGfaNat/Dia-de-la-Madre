@@ -29,15 +29,15 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-Mama2026}
       DATABASE_URL: postgres://${DB_USER:-postgres}:${DB_PASSWORD:-postgres_pass_mama2026}@db:5432/${DB_NAME:-diadelamadre}
       DATABASE_SSL: "false"
-      FRONTEND_URL: ${FRONTEND_URL:-http://localhost:3000}
+      FRONTEND_URL: ${FRONTEND_URL:-*}
     volumes:
       - backend_uploads:/app/uploads
       - backend_data:/app/data
     depends_on:
       db:
         condition: service_healthy
-    ports:
-      - "5000:5000"
+    expose:
+      - "5000"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://localhost:5000/health || exit 1"]
       interval: 10s
@@ -60,8 +60,8 @@ services:
     depends_on:
       backend:
         condition: service_healthy
-    ports:
-      - "3000:3000"
+    expose:
+      - "3000"
     networks:
       - app-network
 

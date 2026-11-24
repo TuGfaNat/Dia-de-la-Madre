@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { getProducts, saveProducts, Product } from '../db.js';
+import { requireAuth } from '../auth.js';
 
 const router = Router();
 
-// GET /api/products
+// GET /api/products (Público)
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const products = await getProducts();
@@ -13,8 +14,8 @@ router.get('/', async (_req: Request, res: Response) => {
   }
 });
 
-// POST /api/products
-router.post('/', async (req: Request, res: Response) => {
+// POST /api/products (Protegido)
+router.post('/', requireAuth, async (req: Request, res: Response) => {
   try {
     const { name, description, price, stock, image, images, category, season, colors } = req.body;
 
@@ -72,8 +73,8 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// PUT /api/products/:id
-router.put('/:id', async (req: Request, res: Response) => {
+// PUT /api/products/:id (Protegido)
+router.put('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name, description, price, stock, image, images, category, season, colors } = req.body;
@@ -129,8 +130,8 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/products/:id
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE /api/products/:id (Protegido)
+router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const products = await getProducts();

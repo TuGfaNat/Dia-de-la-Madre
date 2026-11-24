@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Lock, Eye, EyeOff, Loader2, ArrowLeft } from 'lucide-react';
 
 interface AdminLoginProps {
-  onLogin: (password: string) => Promise<boolean>;
+  onLogin: (password: string) => Promise<{ success: boolean; error?: string }>;
 }
 
 export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
@@ -23,10 +23,10 @@ export const AdminLogin: React.FC<AdminLoginProps> = ({ onLogin }) => {
 
     setLoading(true);
     setError('');
-    const success = await onLogin(password);
+    const result = await onLogin(password);
     setLoading(false);
-    if (!success) {
-      setError('Contraseña incorrecta');
+    if (!result.success) {
+      setError(result.error || 'Contraseña incorrecta');
     }
   };
 

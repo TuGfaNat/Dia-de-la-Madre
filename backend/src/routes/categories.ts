@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { getCategories, saveCategories, getProducts, saveProducts, Category } from '../db.js';
+import { requireAuth } from '../auth.js';
 
 const router = Router();
 
-// GET /api/categories
+// GET /api/categories (Público)
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const categories = await getCategories();
@@ -13,8 +14,8 @@ router.get('/', async (_req: Request, res: Response) => {
   }
 });
 
-// POST /api/categories
-router.post('/', async (req: Request, res: Response) => {
+// POST /api/categories (Protegido)
+router.post('/', requireAuth, async (req: Request, res: Response) => {
   try {
     const { name } = req.body;
 
@@ -64,8 +65,8 @@ router.post('/', async (req: Request, res: Response) => {
   }
 });
 
-// PUT /api/categories/:id
-router.put('/:id', async (req: Request, res: Response) => {
+// PUT /api/categories/:id (Protegido)
+router.put('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const { name } = req.body;
@@ -119,8 +120,8 @@ router.put('/:id', async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /api/categories/:id
-router.delete('/:id', async (req: Request, res: Response) => {
+// DELETE /api/categories/:id (Protegido)
+router.delete('/:id', requireAuth, async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
     const categories = await getCategories();

@@ -2,6 +2,7 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
+import { requireAuth } from '../auth.js';
 
 const router = Router();
 
@@ -35,8 +36,8 @@ const upload = multer({
   }
 });
 
-// POST /api/upload
-router.post('/', upload.single('file'), (req: Request, res: Response) => {
+// POST /api/upload (Protegido)
+router.post('/', requireAuth, upload.single('file'), (req: Request, res: Response) => {
   try {
     if (!req.file) {
       res.status(400).json({ error: 'No se ha proporcionado ninguna imagen' });

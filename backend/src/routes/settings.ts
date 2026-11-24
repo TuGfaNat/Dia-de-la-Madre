@@ -1,9 +1,10 @@
 import { Router, Request, Response } from 'express';
 import { getSettings, saveSettings, StoreSettings } from '../db.js';
+import { requireAuth } from '../auth.js';
 
 const router = Router();
 
-// GET /api/settings
+// GET /api/settings (Público)
 router.get('/', async (_req: Request, res: Response) => {
   try {
     const settings = await getSettings();
@@ -13,8 +14,8 @@ router.get('/', async (_req: Request, res: Response) => {
   }
 });
 
-// PUT /api/settings
-router.put('/', async (req: Request, res: Response) => {
+// PUT /api/settings (Protegido)
+router.put('/', requireAuth, async (req: Request, res: Response) => {
   try {
     const newSettings: StoreSettings = req.body;
     if (!newSettings || !newSettings.storeName) {

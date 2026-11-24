@@ -1,42 +1,62 @@
 import { Router, Request, Response } from 'express';
 import { sql, isDbEnabled, getProducts, saveProducts, Product } from '../db.js';
+import {
+  createSessionToken,
+  verifySessionToken,
+  requireAuth,
+  getClientIp,
+  checkRateLimit,
+  recordFailedAttempt,
+  recordSuccessfulLogin,
+} from '../auth.js';
 import fs from 'fs';
 import path from 'path';
 
 const router = Router();
 
-const SESSION_TOKEN = 'authenticated_session_token_mama';
-
-// Middleware helper de auth
-const requireAuth = (req: Request, res: Response, next: () => void) => {
-  const session = req.cookies?.admin_session;
-  const secret = req.query?.secret;
-
-  if (session === SESSION_TOKEN || secret === SESSION_TOKEN) {
-    return next();
-  }
-  res.status(401).json({ error: 'No autorizado' });
-};
-
-// POST /api/admin/login
+// POST /api/admin/login con Rate Limiting y tokens firmados
 router.post('/login', (req: Request, res: Response) => {
   try {
+    const ip = getClientIp(req);
+    const limit = checkRateLimit(ip);
+
+    if (limit.blocked) {
+      res.status(429).json({
+        error: `Demasiados intentos fallidos. Por seguridad, el acceso está bloqueado durante ${limit.remainingMinutes} minutos.`,
+      });
+      return;
+    }
+
     const { password } = req.body;
     const adminPassword = process.env.ADMIN_PASSWORD || 'Mama2026';
 
-    if (password === adminPassword) {
-      res.cookie('admin_session', SESSION_TOKEN, {
+    if (password && password === adminPassword) {
+      recordSuccessfulLogin(ip);
+      const token = createSessionToken();
+
+      res.cookie('admin_session', token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         maxAge: 1000 * 60 * 60 * 24, // 1 día
         path: '/',
       });
-      res.json({ success: true, message: 'Autenticación exitosa' });
+
+      res.json({ success: true, message: 'Autenticación exitosa', token });
       return;
     }
 
-    res.status(401).json({ error: 'Contraseña incorrecta' });
+    const attemptResult = recordFailedAttempt(ip);
+    if (attemptResult.isNowBlocked) {
+      res.status(429).json({
+        error: 'Has superado el límite de 5 intentos permitidos. Panel bloqueado por 15 minutos.',
+      });
+      return;
+    }
+
+    res.status(401).json({
+      error: `Contraseña incorrecta. Te quedan ${attemptResult.attemptsLeft} intentos antes del bloqueo temporal.`,
+    });
   } catch (error) {
     res.status(500).json({ error: 'Error en el servidor de autenticación' });
   }
@@ -51,7 +71,10 @@ router.post('/logout', (_req: Request, res: Response) => {
 // GET /api/admin/check
 router.get('/check', (req: Request, res: Response) => {
   const session = req.cookies?.admin_session;
-  if (session === SESSION_TOKEN) {
+  const authHeader = req.headers.authorization;
+  const bearerToken = authHeader?.startsWith('Bearer ') ? authHeader.slice(7) : null;
+
+  if (verifySessionToken(session || bearerToken)) {
     res.json({ authenticated: true });
     return;
   }

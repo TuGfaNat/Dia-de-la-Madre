@@ -90,23 +90,24 @@ export default function AdminPage() {
     }
   };
 
-  const handleLogin = async (password: string) => {
+  const handleLogin = async (password: string): Promise<{ success: boolean; error?: string }> => {
     try {
       const res = await fetch('/api/admin/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ password }),
       });
+      const data = await res.json().catch(() => ({}));
       if (res.ok) {
         setIsAuthenticated(true);
         fetchProducts();
         fetchCategories();
         fetchSettings();
-        return true;
+        return { success: true };
       }
-      return false;
+      return { success: false, error: data.error || 'Contraseña incorrecta' };
     } catch {
-      return false;
+      return { success: false, error: 'Error de conexión con el servidor' };
     }
   };
 

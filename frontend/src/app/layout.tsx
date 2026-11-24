@@ -25,9 +25,12 @@ export const metadata: Metadata = {
   ],
   manifest: "/manifest.json",
   icons: {
-    icon: "/icon.svg",
-    shortcut: "/icon.svg",
-    apple: "/icon.svg",
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: "/apple-icon.png",
   },
   openGraph: {
     title: "🐾 Shiro Neko Lab | Regalos & Detalles Únicos en 3D",

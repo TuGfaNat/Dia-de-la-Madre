@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
     const backendUrl =
       process.env.BACKEND_INTERNAL_URL ||
       process.env.NEXT_PUBLIC_API_URL ||
-      "http://localhost:5000";
+      (process.env.NODE_ENV === "production" ? "http://backend:5000" : "http://localhost:5000");
 
     return [
       {

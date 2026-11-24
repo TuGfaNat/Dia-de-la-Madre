@@ -11,10 +11,13 @@ RUN npm install
 # Fase 2: Builder
 FROM base AS builder
 WORKDIR /app
+ARG BACKEND_INTERNAL_URL=http://backend:5000
+ENV BACKEND_INTERNAL_URL=$BACKEND_INTERNAL_URL
+ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-ENV NEXT_TELEMETRY_DISABLED=1
 RUN npm run build
 
 # Fase 3: Runner

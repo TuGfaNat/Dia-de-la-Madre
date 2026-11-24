@@ -1,15 +1,28 @@
 'use client';
 
-import React from 'react';
-import { ShoppingBag, X, Minus, Plus, Trash2, MessageCircle } from 'lucide-react';
+import React, { useState } from 'react';
+import {
+  ShoppingBag,
+  X,
+  Minus,
+  Plus,
+  Trash2,
+  MessageCircle,
+  Truck,
+  Store,
+  HeartHandshake,
+  User,
+  MapPin,
+  Palette,
+} from 'lucide-react';
 import { CartItem } from '../../types';
 
 interface CartDrawerProps {
   isOpen: boolean;
   onClose: () => void;
   cart: CartItem[];
-  onUpdateQuantity: (id: string, delta: number) => void;
-  onRemoveItem: (id: string) => void;
+  onUpdateQuantity: (id: string, delta: number, selectedColor?: string) => void;
+  onRemoveItem: (id: string, selectedColor?: string) => void;
   whatsappNumber: string;
   storeName: string;
 }
@@ -23,6 +36,12 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   whatsappNumber,
   storeName,
 }) => {
+  const [customerName, setCustomerName] = useState('');
+  const [deliveryType, setDeliveryType] = useState<'delivery' | 'pickup'>('delivery');
+  const [deliveryAddress, setDeliveryAddress] = useState('');
+  const [giftCardNote, setGiftCardNote] = useState('');
+  const [showOrderForm, setShowOrderForm] = useState(false);
+
   if (!isOpen) return null;
 
   const total = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
@@ -30,12 +49,35 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
   const handleCheckout = () => {
     if (cart.length === 0) return;
 
-    let message = `¡Hola ${storeName}! 👋 Me gustaría encargar los siguientes detalles:\n\n`;
+    let message = `¡Hola ${storeName}! 🐾👋 Me gustaría coordinar el siguiente pedido:\n\n`;
+
     cart.forEach((item, index) => {
-      message += `${index + 1}. *${item.name}*\n   • Cantidad: ${item.quantity}\n   • Subtotal: Bs. ${(item.price * item.quantity).toLocaleString('es-BO')}\n`;
+      message += `${index + 1}. *${item.name}*\n`;
+      if (item.selectedColor) {
+        message += `   • Acabado/Color: ${item.selectedColor}\n`;
+      }
+      message += `   • Cantidad: ${item.quantity}\n`;
+      message += `   • Subtotal: Bs. ${(item.price * item.quantity).toLocaleString('es-BO')}\n`;
     });
+
     message += `\n💰 *Total del pedido: Bs. ${total.toLocaleString('es-BO')}*`;
-    message += `\n\n📌 Entiendo que se confirma el encargo con el 50% de anticipo. ¿Podrían confirmarme la disponibilidad y los datos de pago? ¡Muchas gracias! ✨`;
+
+    // Información de Entrega y Dedicatoria
+    message += `\n\n📋 *Detalles del Pedido:*`;
+    if (customerName.trim()) {
+      message += `\n• Cliente: ${customerName.trim()}`;
+    }
+    message += `\n• Modalidad: ${
+      deliveryType === 'delivery'
+        ? `Envío a domicilio 🚚${deliveryAddress.trim() ? ` (${deliveryAddress.trim()})` : ''}`
+        : 'Recojo en taller 🏪'
+    }`;
+
+    if (giftCardNote.trim()) {
+      message += `\n• 💌 *Dedicatoria para la tarjetita de regalo:* "${giftCardNote.trim()}"`;
+    }
+
+    message += `\n\n📌 Entiendo que se confirma el encargo con el 50% de anticipo. ¿Podrían confirmarme disponibilidad y los datos de pago vía QR? ¡Muchas gracias! ✨`;
 
     const url = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(message)}`;
     window.open(url, '_blank');
@@ -74,8 +116,8 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
             </button>
           </div>
 
-          {/* Items List */}
-          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-5">
+          {/* Items List & Checkout Form */}
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-5">
             {cart.length === 0 ? (
               <div className="text-center py-16 sm:py-24 space-y-4">
                 <div className="w-16 h-16 rounded-full bg-card-border/10 flex items-center justify-center mx-auto text-rose-400">
@@ -89,66 +131,179 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 </div>
               </div>
             ) : (
-              cart.map((item) => (
-                <div
-                  key={item.id}
-                  className="flex gap-3 sm:gap-4 p-3 rounded-2xl bg-card-border/5 border border-card-border/60 transition-colors"
-                >
-                  {/* Thumbnail */}
-                  <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-rose-50/10 shrink-0 border border-card-border">
-                    <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+              <>
+                {/* Lista de Productos */}
+                <div className="space-y-3">
+                  {cart.map((item) => {
+                    const itemUniqueId = item.selectedColor
+                      ? `${item.id}__${item.selectedColor}`
+                      : item.id;
+                    return (
+                      <div
+                        key={itemUniqueId}
+                        className="flex gap-3 sm:gap-4 p-3 rounded-2xl bg-card-border/5 border border-card-border/60 transition-colors"
+                      >
+                        {/* Thumbnail */}
+                        <div className="w-18 h-18 sm:w-20 sm:h-20 rounded-xl overflow-hidden bg-rose-50/10 shrink-0 border border-card-border">
+                          <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                        </div>
+
+                        {/* Detalle */}
+                        <div className="flex-grow min-w-0 space-y-1 flex flex-col justify-between">
+                          <div>
+                            <div className="flex justify-between items-start gap-2">
+                              <h4 className="font-bold text-xs sm:text-sm text-txt-primary line-clamp-1">
+                                {item.name}
+                              </h4>
+                              <span className="text-xs sm:text-sm font-extrabold text-rose-500 shrink-0 font-sans">
+                                Bs. {(item.price * item.quantity).toLocaleString('es-BO')}
+                              </span>
+                            </div>
+
+                            {/* Color / Acabado si aplica */}
+                            {item.selectedColor && (
+                              <p className="text-[11px] font-bold text-rose-500 flex items-center gap-1 mt-0.5">
+                                <Palette className="w-3 h-3" />
+                                <span>{item.selectedColor}</span>
+                              </p>
+                            )}
+
+                            <p className="text-[10px] text-txt-muted uppercase tracking-wider font-extrabold truncate mt-0.5">
+                              {item.category}
+                            </p>
+                          </div>
+
+                          <div className="flex justify-between items-center pt-1">
+                            {/* Controles de cantidad */}
+                            <div className="flex items-center gap-1.5 bg-card-bg border border-card-border rounded-full px-2 py-0.5 shadow-2xs">
+                              <button
+                                onClick={() => onUpdateQuantity(item.id, -1, item.selectedColor)}
+                                className="p-1 text-txt-secondary hover:text-rose-500 transition-colors cursor-pointer"
+                                aria-label="Restar unidad"
+                              >
+                                <Minus className="w-3 h-3" />
+                              </button>
+                              <span className="w-5 text-center text-xs font-bold text-txt-primary">
+                                {item.quantity}
+                              </span>
+                              <button
+                                onClick={() => onUpdateQuantity(item.id, 1, item.selectedColor)}
+                                disabled={item.quantity >= item.stock}
+                                className="p-1 text-txt-secondary hover:text-rose-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                                aria-label="Sumar unidad"
+                              >
+                                <Plus className="w-3 h-3" />
+                              </button>
+                            </div>
+
+                            {/* Eliminar */}
+                            <button
+                              onClick={() => onRemoveItem(item.id, item.selectedColor)}
+                              className="p-1.5 text-txt-muted hover:text-rose-500 transition-colors cursor-pointer"
+                              title="Eliminar del pedido"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {/* Formulario de Datos de Entrega & Tarjetita de Regalo */}
+                <div className="border border-card-border/80 rounded-2xl p-4 bg-card-border/5 space-y-3.5">
+                  <div
+                    onClick={() => setShowOrderForm((prev) => !prev)}
+                    className="flex items-center justify-between cursor-pointer"
+                  >
+                    <span className="text-xs font-bold text-txt-primary flex items-center gap-1.5">
+                      <HeartHandshake className="w-4 h-4 text-rose-500" />
+                      <span>Datos para tu Pedido & Tarjetita</span>
+                    </span>
+                    <span className="text-[11px] font-bold text-rose-500">
+                      {showOrderForm ? 'Ocultar ▲' : 'Completar ▼'}
+                    </span>
                   </div>
 
-                  {/* Detalle */}
-                  <div className="flex-grow min-w-0 space-y-1.5 flex flex-col justify-between">
-                    <div className="flex justify-between items-start gap-2">
-                      <h4 className="font-bold text-xs sm:text-sm text-txt-primary line-clamp-1">
-                        {item.name}
-                      </h4>
-                      <span className="text-xs sm:text-sm font-extrabold text-rose-500 shrink-0">
-                        Bs. {(item.price * item.quantity).toLocaleString('es-BO')}
-                      </span>
+                  <div className={`space-y-3 ${showOrderForm ? 'block' : 'hidden'}`}>
+                    {/* Nombre del cliente */}
+                    <div className="space-y-1">
+                      <label className="text-[11px] font-bold text-txt-secondary flex items-center gap-1">
+                        <User className="w-3 h-3 text-txt-muted" /> Tu Nombre (Opcional):
+                      </label>
+                      <input
+                        type="text"
+                        value={customerName}
+                        onChange={(e) => setCustomerName(e.target.value)}
+                        placeholder="Ej. Camila Morales"
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-card-border bg-card-bg text-txt-primary focus:outline-none focus:ring-1 focus:ring-rose-400 font-medium"
+                      />
                     </div>
 
-                    <p className="text-[10px] text-txt-muted uppercase tracking-wider font-extrabold truncate">
-                      {item.category}
-                    </p>
-
-                    <div className="flex justify-between items-center pt-1">
-                      {/* Controles de cantidad */}
-                      <div className="flex items-center gap-1.5 bg-card-bg border border-card-border rounded-full px-2 py-0.5 shadow-2xs">
+                    {/* Modalidad de Entrega */}
+                    <div className="space-y-1.5">
+                      <label className="text-[11px] font-bold text-txt-secondary">Modalidad de Entrega:</label>
+                      <div className="grid grid-cols-2 gap-2">
                         <button
-                          onClick={() => onUpdateQuantity(item.id, -1)}
-                          className="p-1 text-txt-secondary hover:text-rose-500 transition-colors cursor-pointer"
-                          aria-label="Restar unidad"
+                          type="button"
+                          onClick={() => setDeliveryType('delivery')}
+                          className={`p-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                            deliveryType === 'delivery'
+                              ? 'bg-rose-500 text-white border-rose-500 shadow-xs'
+                              : 'bg-card-bg text-txt-secondary border-card-border hover:border-rose-300'
+                          }`}
                         >
-                          <Minus className="w-3 h-3" />
+                          <Truck className="w-3.5 h-3.5" />
+                          <span>A domicilio</span>
                         </button>
-                        <span className="w-5 text-center text-xs font-bold text-txt-primary">
-                          {item.quantity}
-                        </span>
                         <button
-                          onClick={() => onUpdateQuantity(item.id, 1)}
-                          disabled={item.quantity >= item.stock}
-                          className="p-1 text-txt-secondary hover:text-rose-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors cursor-pointer"
-                          aria-label="Sumar unidad"
+                          type="button"
+                          onClick={() => setDeliveryType('pickup')}
+                          className={`p-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 border transition-all cursor-pointer ${
+                            deliveryType === 'pickup'
+                              ? 'bg-rose-500 text-white border-rose-500 shadow-xs'
+                              : 'bg-card-bg text-txt-secondary border-card-border hover:border-rose-300'
+                          }`}
                         >
-                          <Plus className="w-3 h-3" />
+                          <Store className="w-3.5 h-3.5" />
+                          <span>Recojo en taller</span>
                         </button>
                       </div>
+                    </div>
 
-                      {/* Eliminar */}
-                      <button
-                        onClick={() => onRemoveItem(item.id)}
-                        className="p-1.5 text-txt-muted hover:text-rose-500 transition-colors cursor-pointer"
-                        title="Eliminar del pedido"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
+                    {/* Dirección / Zona si es a domicilio */}
+                    {deliveryType === 'delivery' && (
+                      <div className="space-y-1">
+                        <label className="text-[11px] font-bold text-txt-secondary flex items-center gap-1">
+                          <MapPin className="w-3 h-3 text-txt-muted" /> Dirección o Zona de Entrega:
+                        </label>
+                        <input
+                          type="text"
+                          value={deliveryAddress}
+                          onChange={(e) => setDeliveryAddress(e.target.value)}
+                          placeholder="Ej. Sopocachi, Av. 6 de Agosto / Calacoto..."
+                          className="w-full px-3 py-2 text-xs rounded-xl border border-card-border bg-card-bg text-txt-primary focus:outline-none focus:ring-1 focus:ring-rose-400 font-medium"
+                        />
+                      </div>
+                    )}
+
+                    {/* Dedicatoria para la tarjetita de regalo */}
+                    <div className="space-y-1 pt-1">
+                      <label className="text-[11px] font-bold text-txt-secondary flex items-center gap-1">
+                        <span>💌</span> Mensaje para la tarjetita de regalo (Opcional):
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={giftCardNote}
+                        onChange={(e) => setGiftCardNote(e.target.value)}
+                        placeholder="Ej. ¡Feliz día mamá! Gracias por iluminar siempre nuestros días con tu amor..."
+                        className="w-full px-3 py-2 text-xs rounded-xl border border-card-border bg-card-bg text-txt-primary focus:outline-none focus:ring-1 focus:ring-rose-400 font-medium resize-none"
+                      />
                     </div>
                   </div>
                 </div>
-              ))
+              </>
             )}
           </div>
 
@@ -168,7 +323,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                   className="w-full py-3.5 sm:py-4 bg-emerald-500 hover:bg-emerald-600 text-white rounded-full font-bold tracking-wide transition-all shadow-md hover:shadow-emerald-300/30 flex items-center justify-center gap-2 cursor-pointer text-xs sm:text-sm"
                 >
                   <MessageCircle className="w-5 h-5 fill-white text-emerald-500" />
-                  <span>Pedir y Coordinar por WhatsApp</span>
+                  <span>Enviar Pedido a WhatsApp</span>
                 </button>
 
                 <p className="text-[10px] text-amber-600 dark:text-amber-400 font-bold text-center flex items-center justify-center gap-1.5 bg-amber-500/10 py-1.5 px-3 rounded-lg border border-amber-500/20">
@@ -177,7 +332,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
                 </p>
 
                 <p className="text-[10px] text-txt-muted font-medium text-center">
-                  Te responderemos al instante para coordinar la fecha, dedicatoria y entrega.
+                  Te responderemos al instante para coordinar la entrega y el detalle de tu tarjetita.
                 </p>
               </div>
             </div>

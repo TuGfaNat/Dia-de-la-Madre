@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { ChevronLeft, ChevronRight, ShoppingBag } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ShoppingBag, Share2, Check } from 'lucide-react';
 import { Product, CartItem } from '../../types';
 import { getSeasonBadge } from '../../lib/season';
 
@@ -21,9 +21,13 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   const [activeImageIndex, setActiveImageIndex] = useState(0);
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
+  const [copiedShare, setCopiedShare] = useState(false);
 
-  const cartItem = cart.find((item) => item.id === product.id);
-  const quantityInCart = cartItem ? cartItem.quantity : 0;
+  // Contar cantidad total de este producto en el carrito (independiente de colores)
+  const quantityInCart = cart
+    .filter((item) => item.id === product.id)
+    .reduce((sum, item) => sum + item.quantity, 0);
+
   const isOutOfStock = product.stock <= 0;
   const isLimitReached = quantityInCart >= product.stock;
 
@@ -42,6 +46,29 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
+  const handleShare = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const shareData = {
+      title: `${product.name} | Shiro Neko Lab 🐾`,
+      text: `¡Mira este regalo artesanal en Shiro Neko Lab! ${product.name} - Bs. ${product.price}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // Cancelado por el usuario
+      }
+    } else {
+      await navigator.clipboard.writeText(`${shareData.text} ➡️ ${window.location.href}`);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 2000);
+    }
+  };
+
   return (
     <div
       onClick={() => onSelect(product)}
@@ -52,14 +79,24 @@ export const ProductCard: React.FC<ProductCardProps> = ({
         {product.category}
       </span>
 
-      {/* Temporada Badge */}
-      <span
-        className={`absolute top-3.5 right-3.5 z-10 px-2.5 py-0.5 rounded-full text-[10px] font-extrabold shadow-sm border whitespace-nowrap ${
-          getSeasonBadge(product.season).class
-        }`}
-      >
-        {getSeasonBadge(product.season).label}
-      </span>
+      {/* Temporada Badge & Botón Compartir */}
+      <div className="absolute top-3.5 right-3.5 z-10 flex items-center gap-1.5">
+        <span
+          className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold shadow-sm border whitespace-nowrap ${
+            getSeasonBadge(product.season).class
+          }`}
+        >
+          {getSeasonBadge(product.season).label}
+        </span>
+        <button
+          onClick={handleShare}
+          className="p-1.5 rounded-full bg-card-bg/90 hover:bg-card-border/20 text-txt-secondary hover:text-rose-500 border border-card-border shadow-xs backdrop-blur-xs transition-colors cursor-pointer"
+          title="Compartir regalo"
+          aria-label="Compartir regalo"
+        >
+          {copiedShare ? <Check className="w-3 h-3 text-emerald-500" /> : <Share2 className="w-3 h-3" />}
+        </button>
+      </div>
 
       {/* Imagen / Slider */}
       <div className="aspect-square w-full relative overflow-hidden bg-rose-50/5 dark:bg-rose-950/10 group/img">

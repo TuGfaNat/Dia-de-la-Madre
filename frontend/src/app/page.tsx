@@ -156,11 +156,15 @@ export default function HomePage() {
     }, 3000);
   };
 
-  const addToCart = (product: Product, quantityToAdd: number = 1) => {
-    const existingItem = cart.find((item) => item.id === product.id);
-    const currentQty = existingItem ? existingItem.quantity : 0;
+  const addToCart = (product: Product, quantityToAdd: number = 1, selectedColor?: string) => {
+    const existingItem = cart.find(
+      (item) => item.id === product.id && (!selectedColor || item.selectedColor === selectedColor)
+    );
+    const totalQtyInCart = cart
+      .filter((item) => item.id === product.id)
+      .reduce((sum, item) => sum + item.quantity, 0);
 
-    if (currentQty + quantityToAdd > product.stock) {
+    if (totalQtyInCart + quantityToAdd > product.stock) {
       showNotification(`Solo quedan ${product.stock} unidades en stock`, 'error');
       return;
     }
@@ -168,40 +172,59 @@ export default function HomePage() {
     let newCart: CartItem[];
     if (existingItem) {
       newCart = cart.map((item) =>
-        item.id === product.id ? { ...item, quantity: item.quantity + quantityToAdd } : item
+        item === existingItem
+          ? { ...item, quantity: item.quantity + quantityToAdd }
+          : item
       );
     } else {
-      newCart = [...cart, { ...product, quantity: quantityToAdd }];
+      newCart = [
+        ...cart,
+        {
+          ...product,
+          quantity: quantityToAdd,
+          selectedColor,
+          cartKey: selectedColor ? `${product.id}__${selectedColor}` : product.id,
+        },
+      ];
     }
 
     saveCartToStorage(newCart);
+    const colorLabel = selectedColor ? ` (${selectedColor})` : '';
     showNotification(
-      `¡${product.name} (${quantityToAdd} ${quantityToAdd > 1 ? 'unidades' : 'unidad'}) añadido al carrito!`,
+      `¡${product.name}${colorLabel} (${quantityToAdd} ${quantityToAdd > 1 ? 'unidades' : 'unidad'}) añadido al carrito!`,
       'success'
     );
   };
 
-  const updateQuantity = (productId: string, delta: number) => {
-    const item = cart.find((i) => i.id === productId);
+  const updateQuantity = (productId: string, delta: number, selectedColor?: string) => {
+    const item = cart.find(
+      (i) => i.id === productId && (!selectedColor || i.selectedColor === selectedColor)
+    );
     if (!item) return;
 
     const newQty = item.quantity + delta;
     if (newQty <= 0) {
-      removeFromCart(productId);
+      removeFromCart(productId, selectedColor);
       return;
     }
 
-    if (newQty > item.stock) {
+    const totalQtyInCart = cart
+      .filter((i) => i.id === productId && i !== item)
+      .reduce((sum, i) => sum + i.quantity, 0);
+
+    if (totalQtyInCart + newQty > item.stock) {
       showNotification(`Solo quedan ${item.stock} unidades disponibles`, 'error');
       return;
     }
 
-    const newCart = cart.map((i) => (i.id === productId ? { ...i, quantity: newQty } : i));
+    const newCart = cart.map((i) => (i === item ? { ...i, quantity: newQty } : i));
     saveCartToStorage(newCart);
   };
 
-  const removeFromCart = (productId: string) => {
-    const newCart = cart.filter((i) => i.id !== productId);
+  const removeFromCart = (productId: string, selectedColor?: string) => {
+    const newCart = cart.filter(
+      (i) => !(i.id === productId && (!selectedColor || i.selectedColor === selectedColor))
+    );
     saveCartToStorage(newCart);
     showNotification('Producto eliminado del pedido', 'success');
   };

@@ -1,7 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
-import { X, Plus, Minus, ShoppingBag, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useRef } from 'react';
+import {
+  X,
+  Plus,
+  Minus,
+  ShoppingBag,
+  ChevronLeft,
+  ChevronRight,
+  ZoomIn,
+  ZoomOut,
+  Share2,
+  Check,
+  Palette,
+} from 'lucide-react';
 import { Product, CartItem } from '../../types';
 import { getSeasonBadge } from '../../lib/season';
 
@@ -9,7 +21,7 @@ interface ProductDetailModalProps {
   product: Product | null;
   cart: CartItem[];
   onClose: () => void;
-  onAddToCart: (product: Product, quantity: number) => void;
+  onAddToCart: (product: Product, quantity: number, selectedColor?: string) => void;
 }
 
 export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
@@ -23,9 +35,24 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const [touchStart, setTouchStart] = useState<number | null>(null);
   const [touchEnd, setTouchEnd] = useState<number | null>(null);
 
+  // Estado de zoom
+  const [isZoomed, setIsZoomed] = useState(false);
+  const [zoomPos, setZoomPos] = useState({ x: 50, y: 50 });
+  const imageContainerRef = useRef<HTMLDivElement>(null);
+
+  // Estado de color seleccionado
+  const initialColor =
+    product?.colors && product.colors.length > 0 ? product.colors[0] : undefined;
+  const [selectedColor, setSelectedColor] = useState<string | undefined>(initialColor);
+  const [copiedShare, setCopiedShare] = useState(false);
+
   if (!product) return null;
 
-  const cartItem = cart.find((item) => item.id === product.id);
+  // Carrito: buscar considerando el color si aplica
+  const cartItem = cart.find(
+    (item) =>
+      item.id === product.id && (!selectedColor || item.selectedColor === selectedColor)
+  );
   const qtyInCart = cartItem ? cartItem.quantity : 0;
   const maxAvailable = product.stock - qtyInCart;
   const isOutOfStock = product.stock <= 0;
@@ -34,43 +61,98 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
   const images = product.images && product.images.length > 0 ? product.images : [product.image];
   const hasMultipleImages = images.length > 1;
 
+  // Determinar si tiene opciones de color o si es producto 3D
+  const availableColors =
+    product.colors && product.colors.length > 0
+      ? product.colors
+      : product.category.toLowerCase().includes('3d') ||
+        product.name.toLowerCase().includes('3d') ||
+        product.description.toLowerCase().includes('3d')
+      ? ['Blanco Hueso', 'Seda Dorado', 'Negro Mate', 'Rosa Pastel']
+      : [];
+
   const nextImage = () => {
     setActiveImageIndex((prev) => (prev + 1) % images.length);
+    setIsZoomed(false);
   };
 
   const prevImage = () => {
     setActiveImageIndex((prev) => (prev - 1 + images.length) % images.length);
+    setIsZoomed(false);
+  };
+
+  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!imageContainerRef.current) return;
+    const rect = imageContainerRef.current.getBoundingClientRect();
+    const x = ((e.clientX - rect.left) / rect.width) * 100;
+    const y = ((e.clientY - rect.top) / rect.height) * 100;
+    setZoomPos({ x: Math.max(0, Math.min(100, x)), y: Math.max(0, Math.min(100, y)) });
   };
 
   const handleAdd = () => {
-    onAddToCart(product, quantity);
+    onAddToCart(product, quantity, selectedColor);
     setQuantity(1);
     onClose();
   };
 
+  const handleShare = async () => {
+    const shareData = {
+      title: `${product.name} | Shiro Neko Lab 🐾`,
+      text: `¡Mira este detalle en Shiro Neko Lab! ${product.name} - Bs. ${product.price}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+      } catch (err) {
+        // Cancelado por el usuario
+      }
+    } else {
+      await navigator.clipboard.writeText(`${shareData.text} ➡️ ${window.location.href}`);
+      setCopiedShare(true);
+      setTimeout(() => setCopiedShare(false), 2500);
+    }
+  };
+
   return (
     <div
-      className="fixed inset-0 z-50 overflow-y-auto bg-black/70 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6 animate-in fade-in duration-200"
+      className="fixed inset-0 z-50 overflow-y-auto bg-black/75 backdrop-blur-sm flex items-center justify-center p-3 sm:p-4 md:p-6 animate-in fade-in duration-200"
       onClick={onClose}
     >
       <div
         className="relative bg-card-bg border border-card-border rounded-3xl max-w-4xl w-full overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[92vh] animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Botón Cerrar */}
-        <button
-          onClick={onClose}
-          className="absolute top-3.5 right-3.5 z-20 p-2 rounded-full bg-card-bg/90 hover:bg-card-border/20 text-txt-secondary hover:text-txt-primary border border-card-border/50 transition-colors cursor-pointer"
-          aria-label="Cerrar modal"
-        >
-          <X className="w-5 h-5" />
-        </button>
+        {/* Botones Flotantes: Cerrar y Compartir */}
+        <div className="absolute top-3.5 right-3.5 z-20 flex items-center gap-2">
+          <button
+            onClick={handleShare}
+            className="p-2 rounded-full bg-card-bg/90 hover:bg-card-border/20 text-txt-secondary hover:text-rose-500 border border-card-border/50 transition-colors cursor-pointer"
+            title="Compartir regalo"
+            aria-label="Compartir regalo"
+          >
+            {copiedShare ? <Check className="w-4 h-4 text-emerald-500" /> : <Share2 className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={onClose}
+            className="p-2 rounded-full bg-card-bg/90 hover:bg-card-border/20 text-txt-secondary hover:text-txt-primary border border-card-border/50 transition-colors cursor-pointer"
+            aria-label="Cerrar modal"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
 
-        {/* Columna Izquierda: Galería de Fotos */}
+        {/* Columna Izquierda: Galería con Lupa de Zoom */}
         <div className="md:w-1/2 flex flex-col bg-rose-50/5 dark:bg-black/20 border-b md:border-b-0 md:border-r border-card-border">
-          {/* Imagen Principal Grande con soporte Touch */}
+          {/* Contenedor Principal con Zoom */}
           <div
-            className="relative aspect-square w-full overflow-hidden flex items-center justify-center group"
+            ref={imageContainerRef}
+            onMouseMove={handleMouseMove}
+            onMouseEnter={() => setIsZoomed(true)}
+            onMouseLeave={() => setIsZoomed(false)}
+            onClick={() => setIsZoomed((prev) => !prev)}
+            className="relative aspect-square w-full overflow-hidden flex items-center justify-center group cursor-crosshair select-none"
             onTouchStart={(e) => setTouchStart(e.targetTouches[0].clientX)}
             onTouchMove={(e) => setTouchEnd(e.targetTouches[0].clientX)}
             onTouchEnd={() => {
@@ -85,20 +167,41 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <img
               src={images[activeImageIndex]}
               alt={`${product.name} - ${activeImageIndex + 1}`}
-              className="w-full h-full object-cover transition-all duration-300"
+              className={`w-full h-full object-cover transition-transform duration-200 ${
+                isZoomed ? 'scale-220' : 'scale-100'
+              }`}
+              style={
+                isZoomed
+                  ? {
+                      transformOrigin: `${zoomPos.x}% ${zoomPos.y}%`,
+                    }
+                  : undefined
+              }
             />
+
+            {/* Indicador flotante de Zoom */}
+            <div className="absolute top-3 left-3 z-10 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/60 text-white text-[10px] font-bold backdrop-blur-xs pointer-events-none">
+              {isZoomed ? <ZoomOut className="w-3 h-3 text-rose-300" /> : <ZoomIn className="w-3 h-3 text-rose-300" />}
+              <span>{isZoomed ? 'Zoom activo' : 'Pasa el cursor para zoom'}</span>
+            </div>
 
             {hasMultipleImages && (
               <>
                 <button
-                  onClick={prevImage}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prevImage();
+                  }}
                   className="absolute left-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/85 text-white transition-opacity cursor-pointer z-10"
                   aria-label="Foto anterior"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
-                  onClick={nextImage}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextImage();
+                  }}
                   className="absolute right-2.5 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 hover:bg-black/85 text-white transition-opacity cursor-pointer z-10"
                   aria-label="Foto siguiente"
                 >
@@ -108,13 +211,16 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             )}
           </div>
 
-          {/* Miniaturas */}
+          {/* Miniaturas de la Galería */}
           {hasMultipleImages && (
             <div className="p-3 flex items-center gap-2 overflow-x-auto scrollbar-none border-t border-card-border/40">
               {images.map((img, idx) => (
                 <button
                   key={idx}
-                  onClick={() => setActiveImageIndex(idx)}
+                  onClick={() => {
+                    setActiveImageIndex(idx);
+                    setIsZoomed(false);
+                  }}
                   className={`w-14 h-14 rounded-xl overflow-hidden border-2 shrink-0 transition-all cursor-pointer ${
                     activeImageIndex === idx
                       ? 'border-rose-500 scale-105 shadow-sm'
@@ -128,7 +234,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           )}
         </div>
 
-        {/* Columna Derecha: Información y Compra */}
+        {/* Columna Derecha: Información y Opciones de Compra */}
         <div className="md:w-1/2 p-5 sm:p-7 md:p-8 flex flex-col justify-between overflow-y-auto space-y-6">
           <div className="space-y-4">
             {/* Badges */}
@@ -154,6 +260,38 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
             <div className="text-2xl sm:text-3xl font-extrabold text-rose-500 font-sans">
               Bs. {product.price.toLocaleString('es-BO')}
             </div>
+
+            {/* Selector de Color (Condicional para 3D / Productos con opciones) */}
+            {availableColors.length > 0 && (
+              <div className="p-3.5 rounded-2xl bg-card-border/10 border border-card-border/60 space-y-2">
+                <label className="text-xs font-bold text-txt-primary flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <Palette className="w-3.5 h-3.5 text-rose-500" /> Acabado / Color de Impresión:
+                  </span>
+                  <span className="text-rose-500 font-black text-[11px]">{selectedColor || availableColors[0]}</span>
+                </label>
+                <div className="flex flex-wrap gap-2 pt-1">
+                  {availableColors.map((color) => {
+                    const isSelected = (selectedColor || availableColors[0]) === color;
+                    return (
+                      <button
+                        key={color}
+                        type="button"
+                        onClick={() => setSelectedColor(color)}
+                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-1.5 cursor-pointer border ${
+                          isSelected
+                            ? 'bg-rose-500 text-white border-rose-500 shadow-xs scale-102'
+                            : 'bg-card-bg text-txt-secondary border-card-border hover:border-rose-400'
+                        }`}
+                      >
+                        {isSelected && <Check className="w-3 h-3 stroke-[3]" />}
+                        <span>{color}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
 
             {/* Descripción */}
             <div className="border-t border-card-border/50 pt-4 space-y-2">

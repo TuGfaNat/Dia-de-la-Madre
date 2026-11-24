@@ -12,6 +12,7 @@ export interface Product {
   images?: string[];
   category: string;
   season?: string;
+  colors?: string[];
 }
 
 export interface Category {
@@ -164,6 +165,10 @@ export async function ensureDbInitialized(): Promise<void> {
           ALTER TABLE products ADD COLUMN IF NOT EXISTS season TEXT DEFAULT 'General'
         `;
 
+        await sql`
+          ALTER TABLE products ADD COLUMN IF NOT EXISTS colors TEXT[] DEFAULT '{}'
+        `;
+
         // Sembrar categorías si está vacía
         const catCount = await sql`SELECT COUNT(*)::int as count FROM categories`;
         if (catCount[0].count === 0) {
@@ -218,7 +223,7 @@ export async function getProducts(): Promise<Product[]> {
     try {
       await ensureDbInitialized();
       const rows = await sql`
-        SELECT id, name, description, price::float as price, stock, image, images, category, COALESCE(season, 'General') as season
+        SELECT id, name, description, price::float as price, stock, image, images, category, COALESCE(season, 'General') as season, COALESCE(colors, ARRAY[]::TEXT[]) as colors
         FROM products
         ORDER BY id ASC
       `;
@@ -231,7 +236,8 @@ export async function getProducts(): Promise<Product[]> {
         image: r.image,
         images: r.images,
         category: r.category,
-        season: r.season || 'General'
+        season: r.season || 'General',
+        colors: r.colors || []
       }));
     } catch (error) {
       console.error('[DB] Error leyendo de Postgres, usando fallback local/memoria:', error);
@@ -242,7 +248,8 @@ export async function getProducts(): Promise<Product[]> {
   return products.map(p => ({
     ...p,
     images: p.images && p.images.length > 0 ? p.images : [p.image],
-    season: p.season || 'General'
+    season: p.season || 'General',
+    colors: p.colors || []
   }));
 }
 
@@ -269,7 +276,7 @@ export async function saveProducts(products: Product[]): Promise<boolean> {
         if (products.length > 0) {
           for (const p of products) {
             await sqlTrans`
-              INSERT INTO products (id, name, description, price, stock, image, images, category, season)
+              INSERT INTO products (id, name, description, price, stock, image, images, category, season, colors)
               VALUES (
                 ${p.id},
                 ${p.name},
@@ -279,7 +286,8 @@ export async function saveProducts(products: Product[]): Promise<boolean> {
                 ${p.image},
                 ${p.images || [p.image]},
                 ${p.category},
-                ${p.season || 'General'}
+                ${p.season || 'General'},
+                ${p.colors || []}
               )
             `;
           }

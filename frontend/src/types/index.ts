@@ -8,10 +8,13 @@ export interface Product {
   images?: string[];
   category: string;
   season?: string;
+  colors?: string[];
 }
 
 export interface CartItem extends Product {
   quantity: number;
+  selectedColor?: string;
+  cartKey?: string;
 }
 
 export interface Category {

@@ -13,6 +13,11 @@ export const metadata: Metadata = {
   title: "🐾 Shiro Neko Lab | Regalos de Autor & Colecciones por Temporada",
   description: "Boutique artesanal de regalos, papelería y detalles únicos. Descubre nuestra Edición Especial de Navidad, colecciones por temporada y detalles personalizados con envío coordinado por WhatsApp.",
   keywords: ["Shiro Neko", "Shiro Neko Lab", "regalos de navidad", "regalos personalizados", "papelería artesanal", "detalles de autor"],
+  icons: {
+    icon: "/icon.svg",
+    shortcut: "/icon.svg",
+    apple: "/icon.svg",
+  },
   openGraph: {
     title: "🐾 Shiro Neko Lab | Regalos & Detalles Únicos",
     description: "Boutique artesanal de regalos, cajas personalizadas, papelería y colecciones por temporada.",
